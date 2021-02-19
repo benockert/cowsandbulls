@@ -1,6 +1,8 @@
 defmodule BullsWeb.UserSocket do
   use Phoenix.Socket
 
+  channel "cowsandbulls:*", BullsWeb.GameChannel
+
   ## Channels
   # channel "room:*", BullsWeb.RoomChannel
 

@@ -16,7 +16,7 @@ import "phoenix_html"
 
 
 //Add React component
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 // function Demo(_) {
@@ -31,12 +31,13 @@ import ReactDOM from 'react-dom';
 // }
 
 import { validity_check, get_result, new_code } from "./logic.js";
+import { connect, send_guess, reset} from "./socket.js";
 
 //forms the page when the user has lost the game
 function Defeat({ new_game }) {
     return (
         <div className="cowsAndBulls">
-            <p className="defeat">DEFEAT!</p>
+            <p className="defeat">You lose!</p>
             <button className="button" onClick={new_game}>
                 New Game
             </button>
@@ -48,7 +49,7 @@ function Defeat({ new_game }) {
 function Victory({ new_game }) {
     return (
         <div className="cowsAndBulls">
-            <p className="victory">VICTORY!</p>
+            <p className="victory">You win!</p>
             <button className="button" onClick={new_game}>
                 New Game
             </button>
@@ -56,16 +57,18 @@ function Victory({ new_game }) {
     );
 }
 
-function App() {
-    const [code, setCode] = useState(new_code());
-    const [input, setInput] = useState("");
-    const [guesses, setGuesses] = useState([]);
-    const [results, setResults] = useState([]);
-    const [invalid, setInvalid] = useState("");
+function Bulls() {
+    const [input, setInput] = useState([]);
+    const [state, setState] = useState({
+        guesses: [],
+        results: [],
+    });
 
-    //if the user guesses the correct code, render the victory screen
-    //idea taken from Nat Tuck's hangman implementation
-    if (guesses[guesses.length - 1] === code) {
+    let {guesses, results} = state;
+
+    useEffect(() => { connect(setState); });
+
+    if (results[results.length - 1] == "4B0C") {
         //VICTORY
         return <Victory new_game={reset} />;
     }
@@ -74,31 +77,22 @@ function App() {
     //idea taken from Nat Tuck's hangman implementation
     if (guesses.length === 8) {
         //GAMEOVER
-        return <Defeat new_game={reset} />;
+        return <Defeat new_game={restart} />;
     }
 
-    //resets the state and sets a new code to restart the game
-    function reset() {
+    //restarts the game by resetting all state
+    function restart() {
         //START OVER
+        console.log("Restarting game");
         setInput("");
-        setGuesses([]);
-        setResults([]);
-        setCode(new_code());
+        reset();
     }
 
-    //when the 'Guess' button is pressed, sanitizes the input and either
-    //handles the guess or displays a wanring message
+    //when the 'Guess' button is pressed, sends the input field text to the server
     function submit() {
-        if (validity_check(input)) {
-            let g = guesses.concat(input);
-            setGuesses(g);
-            let r = results.concat(get_result(input, code));
-            setResults(r);
-            setInput("");
-            setInvalid("");
-        } else {
-            setInvalid("Guess must be 4 unique numbers");
-        }
+        send_guess({guess: input});
+        setInput("");
+        console.log(state);
     }
 
     //from Nat Tuck's hangman implementation, updates the guess input field
@@ -118,7 +112,7 @@ function App() {
     return (
         <div className="cowsAndBulls">
             <h1>COWS AND BULLS</h1>
-            <p>
+            <div>
                 <input
                     type="text"
                     value={input}
@@ -130,11 +124,10 @@ function App() {
                     GUESS
                 </button>
                 <div className="horizontal_space" />
-                <button className="button" onClick={reset}>
+                <button className="button" onClick={restart}>
                     RESET
                 </button>
-            </p>
-            <p className="warning">{invalid}</p>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -192,7 +185,7 @@ function App() {
 
 ReactDOM.render(
 	<React.StrictMode>
-		<App />
+		<Bulls />
 	</React.StrictMode>,
 	document.getElementById('root')
 );

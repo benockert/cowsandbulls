@@ -8,7 +8,7 @@
 // from the params if you are not using authentication.
 import {Socket} from "phoenix"
 
-let socket = new Socket("/socket", {params: {token: ""}})
+let socket = new Socket("/socket", {params: {token: ""}});
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -52,19 +52,19 @@ let socket = new Socket("/socket", {params: {token: ""}})
 //     end
 //
 // Finally, connect to the socket:
-socket.connect()
+socket.connect();
 
 //Cows and Bulls socket logic
-let channel = socket.channel("cowsandbulls:newgame", {});
+let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {code: "", guesses: []}
+let state = {guesses: [], results: []};
 
 let callback = null;
 
 
 //function to update the state that the server sends
 function update_game(new_state) {
-  console.log("New state", st);
+  console.log("New state", new_state);
   state = new_state;
   if (callback) {
     callback(new_state);
@@ -73,24 +73,24 @@ function update_game(new_state) {
 
 export function connect(call) {
   callback = call;
-  callback(call)
+  callback(state)
 }
 
 //functions to be used in app.js
 export function send_guess(guess) {
   channel.push("guess", guess)
-         .recieve("ok", update_game)
-         .recieve("error", resp => {console.log("Error sending guess", resp)});
+         .receive("ok", update_game)
+         .receive("error", resp => {console.log("Error sending guess", resp)});
 }
 
 export function reset() {
   channel.push("reset", {})
-         .recieve("ok", update_game)
-         .recieve("error", resp => {console.log("Error resetting game", resp)});
+         .receive("ok", update_game)
+         .receive("error", resp => {console.log("Error resetting game", resp)});
 }
 
 channel.join()
       .receive("ok", update_game)
       .receive("error", resp => {console.log("Error joining game", resp)});
 
-export default socket
+//export default socket

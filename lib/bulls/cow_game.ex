@@ -3,13 +3,15 @@ defmodule Bulls.Game do
   def new_game do
     %{
       code: random_code(),
-      guesses: MapSet.new(),
+      guesses: [],
+      results: [],
     }
   end
 
   def guess(state, user_guess) do
     #implement invalid guess logic here
-    %{ state | guesses: MapSet.put(state.guesses, user_guess) }
+    #and possibly implement results logic
+    %{ state | guesses: state.guesses ++ [user_guess] }
   end
 
   def view(state) do
@@ -17,8 +19,8 @@ defmodule Bulls.Game do
 
 
     %{
-      results: "1234",
-      guesses: MapSet.to_list(state.guesses),
+      guesses: state.guesses,
+      results: [],
     }
   end
 

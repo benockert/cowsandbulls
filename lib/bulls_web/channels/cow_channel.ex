@@ -5,14 +5,18 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def join("cowsandbulls:" <> _id, payload, socket) do
-    game = Game.new
-    socket = assign(socket, :game, game)
-    view = Game.view(game)
-    {:ok, view, socket}
+    if authorized?(payload) do
+      game = Game.new_game
+      socket = assign(socket, :game, game)
+      view = Game.view(game)
+      {:ok, view, socket}
+    else
+      {:error, %{reason: "unauthorized"}}
+    end
   end
 
   @impl true
-  def handle_in("guess", %{"input" => gu}, socket0) do
+  def handle_in("guess", %{"guess" => gu}, socket0) do
     game0 = socket0.assigns[:game]
     game1 = Game.guess(game0, gu)
     socket1 = assign(socket0, :game, game1)
@@ -22,10 +26,15 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_in("reset", _, socket) do
-    game = Game.new
+    game = Game.new_game
     socket = assign(socket, :game, game)
     view = Game.view(game)
     {:reply, {:ok, view}, socket}
+  end
+
+  # Add authorization logic here as required.
+  defp authorized?(_payload) do
+    true
   end
 
 end
