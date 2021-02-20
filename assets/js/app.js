@@ -62,9 +62,10 @@ function Bulls() {
     const [state, setState] = useState({
         guesses: [],
         results: [],
+        warning: "",
     });
 
-    let {guesses, results} = state;
+    let {guesses, results, warning} = state;
 
     useEffect(() => { connect(setState); });
 
@@ -127,6 +128,7 @@ function Bulls() {
                 <button className="button" onClick={restart}>
                     RESET
                 </button>
+                <p>{warning}</p>
             </div>
             <table>
                 <thead>

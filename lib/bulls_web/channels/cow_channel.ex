@@ -1,3 +1,4 @@
+#logic adapted from Nat Tuck's 02/09 lecture notes and hangman implementation
 defmodule BullsWeb.GameChannel do
   use BullsWeb, :channel
 
@@ -5,14 +6,10 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def join("cowsandbulls:" <> _id, payload, socket) do
-    if authorized?(payload) do
-      game = Game.new_game
-      socket = assign(socket, :game, game)
-      view = Game.view(game)
-      {:ok, view, socket}
-    else
-      {:error, %{reason: "unauthorized"}}
-    end
+    game = Game.new_game
+    socket = assign(socket, :game, game)
+    view = Game.view(game)
+    {:ok, view, socket}
   end
 
   @impl true
@@ -30,11 +27,6 @@ defmodule BullsWeb.GameChannel do
     socket = assign(socket, :game, game)
     view = Game.view(game)
     {:reply, {:ok, view}, socket}
-  end
-
-  # Add authorization logic here as required.
-  defp authorized?(_payload) do
-    true
   end
 
 end
