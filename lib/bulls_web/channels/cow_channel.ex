@@ -5,7 +5,7 @@ defmodule BullsWeb.GameChannel do
   alias Bulls.Game
 
   @impl true
-  def join("cowsandbulls:" <> _id, payload, socket) do
+  def join("cowsandbulls:" <> _id, _payload, socket) do
     game = Game.new_game
     socket = assign(socket, :game, game)
     view = Game.view(game)

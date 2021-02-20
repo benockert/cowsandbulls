@@ -19,19 +19,7 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-// function Demo(_) {
-// 	const [count, setCount] = useState(0);
-//
-// 	return (
-// 		<div>
-// 			<p>Count: {count}</p>
-// 			<p><button onClick={() => setCount(count + 1)}>+1</button></p>
-// 		</div>
-// 	)
-// }
-
-import { validity_check, get_result, new_code } from "./logic.js";
-import { connect, send_guess, reset} from "./socket.js";
+import { connect, send_guess, reset } from "./socket.js";
 
 //forms the page when the user has lost the game
 function Defeat({ new_game }) {

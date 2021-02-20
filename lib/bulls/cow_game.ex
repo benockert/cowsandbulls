@@ -11,7 +11,7 @@ defmodule Bulls.Game do
 
   # appends the user's guess to the guess state if it is a valid guess
   def guess(state, user_guess) do
-    if !valid_guess(user_guess) do
+    if String.length(user_guess) !== 4 || !valid_guess(user_guess) do
       %{ state | warning: "Invalid guess: must be 4 unique numbers"}
     else
       %{ state | guesses: state.guesses ++ [user_guess], warning: "" }

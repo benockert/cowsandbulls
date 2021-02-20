@@ -29,7 +29,7 @@ td {
 }
 
 .button {
-	background-color: purple;
+	background-color: darkslategrey;
 	color: white;
 	font-size: 25px;
 	border-radius: 8px;
@@ -41,7 +41,7 @@ td {
 input[type=text] {
 	font-size: 25px;
 	padding: 10px 5px;
-	border: 4px solid purple;
+	border: 4px solid darkslategrey;
 	border-radius: 6px;
 }
 
