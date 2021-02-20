@@ -55,6 +55,7 @@ function Bulls() {
 
     let {guesses, results, warning} = state;
 
+    //from Nat Tuck's 02/09 Hangman repository
     useEffect(() => { connect(setState); });
 
     if (results[results.length - 1] == "4B0C") {
