@@ -45,6 +45,60 @@ function Victory({ new_game }) {
     );
 }
 
+function Welcome() {
+  const [state, setState] = useState(){
+    game_name: "",
+    user_name: "",
+  }
+
+  let {game_name, user_name} = state;
+
+  function start_game() {
+    //make sure both inputs are valid
+
+    return <Bulls />;
+
+  }
+
+
+  function keyPress(io) {
+      if (io.key === "Enter") {
+          start_game();
+      }
+  }
+
+  return (
+
+    <div className="cowsAndBulls">
+        <h1>COWS AND BULLS</h1>
+        <div>
+            <input
+                type="text"
+                value={game_name}
+                onChange={(gn) => setName(gn.target.value)}
+                onKeyPress={keyPress}
+            />
+            <br>
+            <input
+                type="text"
+                value={user_name}
+                onChange={(un) => setName(un.target.value)}
+                onKeyPress={keyPress}
+            />
+            <br>
+            <button className="button" onClick={start_game}>
+                START
+            </button>
+            <p>
+              {game_name} :: {username}
+            </p>
+        </div>
+      </div>
+
+  );
+
+}
+
 function Bulls() {
     const [input, setInput] = useState([]);
     const [state, setState] = useState({
