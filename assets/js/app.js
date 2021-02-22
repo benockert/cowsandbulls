@@ -46,14 +46,11 @@ function Victory({ new_game }) {
 }
 
 function Welcome() {
-  const [state, setState] = useState(){
-    game_name: "",
-    user_name: "",
-  }
-
-  let {game_name, user_name} = state;
+  const [uname, setUname] = useState("");
+  const [gname, setGname] = useState("");
 
   function start_game() {
+    console.log("Click");
     //make sure both inputs are valid
 
     return <Bulls />;
@@ -74,23 +71,23 @@ function Welcome() {
         <div>
             <input
                 type="text"
-                value={game_name}
-                onChange={(gn) => setName(gn.target.value)}
+                value={gname}
+                onChange={(gn) => setGname(gn.target.value)}
                 onKeyPress={keyPress}
             />
-            <br>
+            <br/>
             <input
                 type="text"
-                value={user_name}
-                onChange={(un) => setName(un.target.value)}
+                value={uname}
+                onChange={(un) => setUname(un.target.value)}
                 onKeyPress={keyPress}
             />
-            <br>
+            <br/>
             <button className="button" onClick={start_game}>
                 START
             </button>
             <p>
-              {game_name} :: {username}
+              {gname} :: {uname}
             </p>
         </div>
       </div>
@@ -114,7 +111,7 @@ function Bulls() {
 
     if (results[results.length - 1] == "4B0C") {
         //VICTORY
-        return <Victory new_game={reset} />;
+        return <Victory new_game={restart} />;
     }
 
     //if the 8th guess is not the code, render the game over screen
@@ -230,7 +227,7 @@ function Bulls() {
 
 ReactDOM.render(
 	<React.StrictMode>
-		<Bulls />
+		<Welcome />
 	</React.StrictMode>,
 	document.getElementById('root')
 );
