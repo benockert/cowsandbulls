@@ -19,215 +19,225 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import { connect, send_guess, reset } from "./socket.js";
+import { connect, send_guess, reset, login } from "./socket.js";
 
 //forms the page when the user has lost the game
 function Defeat({ new_game }) {
-    return (
-        <div className="cowsAndBulls">
-            <p className="defeat">You lose!</p>
-            <button className="button" onClick={new_game}>
-                New Game
-            </button>
-        </div>
-    );
+  return (
+    <div className="cowsAndBulls">
+    <p className="defeat">You lose!</p>
+    <button className="button" onClick={new_game}>
+    New Game
+    </button>
+    </div>
+  );
 }
 
 //forms the page when the user has won the game
 function Victory({ new_game }) {
-    return (
-        <div className="cowsAndBulls">
-            <p className="victory">You win!</p>
-            <button className="button" onClick={new_game}>
-                New Game
-            </button>
-        </div>
-    );
+  return (
+    <div className="cowsAndBulls">
+    <p className="victory">You win!</p>
+    <button className="button" onClick={new_game}>
+    New Game
+    </button>
+    </div>
+  );
 }
 
 function Welcome() {
-  const [uname, setUname] = useState("");
   const [gname, setGname] = useState("");
+  const [uname, setUname] = useState("");
 
-  function start_game() {
-    console.log("Click");
-    //make sure both inputs are valid
+  console.log("Login");
 
-    return <Bulls />;
-
-  }
-
-
-  function keyPress(io) {
-      if (io.key === "Enter") {
-          start_game();
-      }
-  }
+  // function keyPress(io) {
+  //     if (io.key === "Enter") {
+  //       login(gname, uname);
+  //     }
+  // }
 
   return (
-
     <div className="cowsAndBulls">
-        <h1>COWS AND BULLS</h1>
-        <div>
-            <input
-                type="text"
-                value={gname}
-                onChange={(gn) => setGname(gn.target.value)}
-                onKeyPress={keyPress}
-            />
-            <br/>
-            <input
-                type="text"
-                value={uname}
-                onChange={(un) => setUname(un.target.value)}
-                onKeyPress={keyPress}
-            />
-            <br/>
-            <button className="button" onClick={start_game}>
-                START
-            </button>
-            <p>
-              {gname} :: {uname}
-            </p>
-        </div>
-      </div>
-
+    <h1>COWS AND BULLS</h1>
+    <div>
+    <input
+    type="text"
+    value={gname}
+    onChange={(gn) => setGname(gn.target.value)}
+    // onKeyPress={keyPress}
+    />
+    <br/>
+    <input
+    type="text"
+    value={uname}
+    onChange={(un) => setUname(un.target.value)}
+    // onKeyPress={keyPress}
+    />
+    <br/>
+    <button className="button" onClick={() => login(gname, uname)}>
+    START
+    </button>
+    <p>
+    {gname} :: {uname}
+    </p>
+    </div>
+    </div>
   );
 
 }
 
+function Game({game_state}) {
+  const [input, setInput] = useState([]);
+  let {gname, uname, guesses, results, warning} = game_state;
+
+  //when the 'Guess' button is pressed, sends the input field text to the server
+  function submit() {
+    send_guess({guess: input});
+    setInput("");
+  }
+
+  //from Nat Tuck's hangman implementation, updates the guess input field
+  //with the user's input
+  function updateGuess(input) {
+    let current_guess = input.target.value;
+    setInput(current_guess);
+  }
+
+  //from Nat Tuck's hangman implementation, handles the 'Enter' key
+  function keyPress(io) {
+    if (io.key === "Enter") {
+      submit();
+    }
+  }
+
+  return (
+    <div className="cowsAndBulls">
+    <h1>COWS AND BULLS</h1>
+    <div>
+    <input
+    type="text"
+    value={input}
+    onChange={updateGuess}
+    onKeyPress={keyPress}
+    />
+    <div className="horizontal_space" />
+    <button className="button" onClick={submit}>
+    GUESS
+    </button>
+    <div className="horizontal_space" />
+    <button className="button" onClick={restart}>
+    RESET
+    </button>
+    <p>{warning}</p>
+    </div>
+    <table>
+    <thead>
+    <tr>
+    <th> </th>
+    <th>Guess</th>
+    <th>Result</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <th>1</th>
+    <td>{guesses[0]}</td>
+    <td>{results[0]}</td>
+    </tr>
+    <tr>
+    <th>2</th>
+    <td>{guesses[1]}</td>
+    <td>{results[1]}</td>
+    </tr>
+    <tr>
+    <th>3</th>
+    <td>{guesses[2]}</td>
+    <td>{results[2]}</td>
+    </tr>
+    <tr>
+    <th>4</th>
+    <td>{guesses[3]}</td>
+    <td>{results[3]}</td>
+    </tr>
+    <tr>
+    <th>5</th>
+    <td>{guesses[4]}</td>
+    <td>{results[4]}</td>
+    </tr>
+    <tr>
+    <th>6</th>
+    <td>{guesses[5]}</td>
+    <td>{results[5]}</td>
+    </tr>
+    <tr>
+    <th>7</th>
+    <td>{guesses[6]}</td>
+    <td>{results[6]}</td>
+    </tr>
+    <tr>
+    <th>8</th>
+    <td>{guesses[7]}</td>
+    <td>{results[7]}</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+  );
+}
+
+//restarts the game by resetting all state
+function restart() {
+  //START OVER
+  console.log("Restarting game");
+  //setInput("");
+  reset();
+}
+
+//handles login, gameover, victory display logic
 function Bulls() {
-    const [input, setInput] = useState([]);
-    const [state, setState] = useState({
-        guesses: [],
-        results: [],
-        warning: "",
-    });
 
-    let {guesses, results, warning} = state;
+  const [state, setState] = useState({
+    game_name: "",
+    user_name: "",
+    guesses: [],
+    results: [],
+    warning: "",
+  });
 
-    //from Nat Tuck's 02/09 Hangman repository
-    useEffect(() => { connect(setState); });
+  //let {game_name, user_name, guesses, results, warning} = state;
 
-    if (results[results.length - 1] == "4B0C") {
-        //VICTORY
-        return <Victory new_game={restart} />;
-    }
+  useEffect(() => {
+    connect(setState);
+  });
 
-    //if the 8th guess is not the code, render the game over screen
-    //idea taken from Nat Tuck's hangman implementation
-    if (guesses.length === 8) {
-        //GAMEOVER
-        return <Defeat new_game={restart} />;
-    }
+  let body = null;
 
-    //restarts the game by resetting all state
-    function restart() {
-        //START OVER
-        console.log("Restarting game");
-        setInput("");
-        reset();
-    }
+  if (state.game_name !== "" || state.user_name !== "") {
+    body = <Welcome />;
+  }
+  // else if (state.results[state.results.length - 1] == "4B0C") {
+  //   //VICTORY
+  //   body = <Victory new_game={restart} />;
+  // }
+  // else if (state.guesses.length === 8) {
+  //   //GAMEOVER
+  //   body = <Defeat new_game={restart} />;
+  // }
+  // else {
+  //   body = <Game game_state={state} />;
+  // }
 
-    //when the 'Guess' button is pressed, sends the input field text to the server
-    function submit() {
-        send_guess({guess: input});
-        setInput("");
-        console.log(state);
-    }
-
-    //from Nat Tuck's hangman implementation, updates the guess input field
-    //with the user's input
-    function updateGuess(input) {
-        let current_guess = input.target.value;
-        setInput(current_guess);
-    }
-
-    //from Nat Tuck's hangman implementation, handles the 'Enter' key
-    function keyPress(io) {
-        if (io.key === "Enter") {
-            submit();
-        }
-    }
-
-    return (
-        <div className="cowsAndBulls">
-            <h1>COWS AND BULLS</h1>
-            <div>
-                <input
-                    type="text"
-                    value={input}
-                    onChange={updateGuess}
-                    onKeyPress={keyPress}
-                />
-                <div className="horizontal_space" />
-                <button className="button" onClick={submit}>
-                    GUESS
-                </button>
-                <div className="horizontal_space" />
-                <button className="button" onClick={restart}>
-                    RESET
-                </button>
-                <p>{warning}</p>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th> </th>
-                        <th>Guess</th>
-                        <th>Result</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>1</th>
-                        <td>{guesses[0]}</td>
-                        <td>{results[0]}</td>
-                    </tr>
-                    <tr>
-                        <th>2</th>
-                        <td>{guesses[1]}</td>
-                        <td>{results[1]}</td>
-                    </tr>
-                    <tr>
-                        <th>3</th>
-                        <td>{guesses[2]}</td>
-                        <td>{results[2]}</td>
-                    </tr>
-                    <tr>
-                        <th>4</th>
-                        <td>{guesses[3]}</td>
-                        <td>{results[3]}</td>
-                    </tr>
-                    <tr>
-                        <th>5</th>
-                        <td>{guesses[4]}</td>
-                        <td>{results[4]}</td>
-                    </tr>
-                    <tr>
-                        <th>6</th>
-                        <td>{guesses[5]}</td>
-                        <td>{results[5]}</td>
-                    </tr>
-                    <tr>
-                        <th>7</th>
-                        <td>{guesses[6]}</td>
-                        <td>{results[6]}</td>
-                    </tr>
-                    <tr>
-                        <th>8</th>
-                        <td>{guesses[7]}</td>
-                        <td>{results[7]}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    );
+  return (
+    <div className="container">
+    {body}
+    </div>
+  );
 }
 
 ReactDOM.render(
-	<React.StrictMode>
-		<Welcome />
-	</React.StrictMode>,
-	document.getElementById('root')
+  <React.StrictMode>
+  <Bulls />
+  </React.StrictMode>,
+  document.getElementById('root')
 );

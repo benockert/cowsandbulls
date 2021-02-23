@@ -57,7 +57,7 @@ socket.connect();
 //Cows and Bulls socket logic
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {guesses: [], results: []};
+let state = {game_name: "", user_name: "", guesses: [], results: []};
 
 let callback = null;
 
@@ -93,4 +93,13 @@ channel.join()
       .receive("ok", update_game)
       .receive("error", resp => {console.log("Error joining game", resp)});
 
-//export default socket
+//from Nat Tuck's 02/19
+export function login(gname, uname) {
+  channel.push("login", {game_name: gname, user_name: uname})
+         .receive("ok", update_game)
+         .receive("error", resp => {
+           console.log("Unable to start game", resp)
+         });
+}
+
+channel.on("view", update_game);
