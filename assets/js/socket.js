@@ -54,10 +54,13 @@ let socket = new Socket("/socket", {params: {token: ""}});
 // Finally, connect to the socket:
 socket.connect();
 
-//Cows and Bulls socket logic
-let channel = socket.channel("cowsandbulls:1", {});
+let state = {game_name: "1", guesses: [], results: []};
 
-let state = {game_name: "", user_name: "", guesses: [], results: []};
+//Cows and Bulls socket logic
+var cowsgame = "cowsandbulls:";
+var gamename = state.game_name;
+//connects to channel cowsandbulls:game_name
+let channel = socket.channel(cowsgame.concat(gamename), {});
 
 let callback = null;
 

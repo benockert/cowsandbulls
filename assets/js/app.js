@@ -49,30 +49,30 @@ function Welcome() {
   const [gname, setGname] = useState("");
   const [uname, setUname] = useState("");
 
-  console.log("Login");
-
-  // function keyPress(io) {
-  //     if (io.key === "Enter") {
-  //       login(gname, uname);
-  //     }
-  // }
+  function keyPress(io) {
+      if (io.key === "Enter") {
+        login(gname, uname);
+      }
+  }
 
   return (
     <div className="cowsAndBulls">
     <h1>COWS AND BULLS</h1>
     <div>
+    <p>Enter game name:</p>
     <input
     type="text"
     value={gname}
     onChange={(gn) => setGname(gn.target.value)}
-    // onKeyPress={keyPress}
+    onKeyPress={keyPress}
     />
     <br/>
+    <p>Enter user name:</p>
     <input
     type="text"
     value={uname}
     onChange={(un) => setUname(un.target.value)}
-    // onKeyPress={keyPress}
+    onKeyPress={keyPress}
     />
     <br/>
     <button className="button" onClick={() => login(gname, uname)}>
@@ -213,20 +213,21 @@ function Bulls() {
 
   let body = null;
 
-  if (state.game_name !== "" || state.user_name !== "") {
+  if (state.game_name === "" || state.user_name === "") {
+    console.log(state);
     body = <Welcome />;
   }
-  // else if (state.results[state.results.length - 1] == "4B0C") {
-  //   //VICTORY
-  //   body = <Victory new_game={restart} />;
-  // }
-  // else if (state.guesses.length === 8) {
-  //   //GAMEOVER
-  //   body = <Defeat new_game={restart} />;
-  // }
-  // else {
-  //   body = <Game game_state={state} />;
-  // }
+  else if (state.results[state.results.length - 1] == "4B0C") {
+    //VICTORY
+    body = <Victory new_game={restart} />;
+  }
+  else if (state.guesses.length === 8) {
+    //GAMEOVER
+    body = <Defeat new_game={restart} />;
+  }
+  else {
+    body = <Game game_state={state} />;
+  }
 
   return (
     <div className="container">
