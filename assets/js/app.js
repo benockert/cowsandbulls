@@ -19,7 +19,7 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import { connect, send_guess, reset, login } from "./socket.js";
+import { connect, send_guess, reset, login, send_role, send_ready } from "./socket.js";
 
 function Welcome() {
   const [user_name, setUserName] = useState("");
@@ -52,7 +52,7 @@ function Welcome() {
     />
     <br/>
     <br/>
-    <button className="button" onClick={login(user_name)}>
+    <button className="button" onClick={() => login(user_name)}>
     JOIN
     </button>
     </div>
@@ -105,7 +105,7 @@ function Game({game_state}) {
 
   return (
     <div className="cowsAndBulls">
-  
+
     <h1>COWS AND BULLS</h1>
     <div>
     <input
@@ -137,13 +137,39 @@ function Game({game_state}) {
 }
 
 function Lobby({game_state}) {
+  let {uname, gname, uready, role} = game_state;
+
+  function updateReady() {
+    send_ready(!uready);
+  }
 
   //if the player radio button is active, display the 'Player ready' checkbox
   function display_toggle_ready() {
     console.log("toggle");
-    if (document.getElementById('player')) {
+    console.log(game_state.role)
+    if (game_state.role === "player") {
       return (
-        <input type="checkbox" id="ready" name="ready" value="ready" />
+        <div>
+          <input type="checkbox" id="ready" name="ready" value="ready" onChange={updateReady} checked={uready}/>
+          <label htmlFor="ready">I'm ready!</label>
+        </div>
+      );
+    }
+  }
+
+  function updateRole(input) {
+    send_role(input.target.value);
+  }
+
+  function displayPlayers() {
+    console.log("got here");
+    if (game_state.role === "player") {
+      return (
+        <tr>
+          <th>1</th>
+          <td>{game_state.uname}</td>
+          <td>{String(game_state.uready)}</td>
+        </tr>
       );
     }
   }
@@ -155,10 +181,10 @@ function Lobby({game_state}) {
         <p>game name: eventual game name</p>
         <br/>
         <p>user name: {game_state.uname}</p>
-        <input type="radio" id="player" name="role" value="player" />
-        <label for="player">Player</label>
-        <input type="radio" name="role" value="observer" />
-        <label for="observer">Observer</label>
+        <input type="radio" id="player" name="role" value="player" onChange={updateRole} />
+        <label htmlFor="player">Player</label>
+        <input type="radio" name="role" value="observer" onChange={updateRole} />
+        <label htmlFor="observer">Observer</label>
         <br/>
         <div>{display_toggle_ready()}</div>
       </div>
@@ -172,11 +198,7 @@ function Lobby({game_state}) {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th>1</th>
-              <td>{game_state.uname}</td>
-              <td>{game_state.uready}</td>
-            </tr>
+            {displayPlayers()}
           </tbody>
         </table>
       </div>
@@ -190,6 +212,7 @@ function Bulls() {
   const [state, setState] = useState({
     uname: "",
     gname: "",
+    role: "",
     uready: false,
     guesses: [],
     results: [],
@@ -206,9 +229,9 @@ function Bulls() {
     console.log(state);
     body = <Welcome />;
   }
-  // else if (!state.uready){
-  //   body = <Lobby game_state={state} />;
-  // }
+  else if (1 === 1) {
+    body = <Lobby game_state={state} />;
+  }
   else {
     body = <Game game_state={state} />;
   }

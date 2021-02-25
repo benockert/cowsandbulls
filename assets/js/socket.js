@@ -83,6 +83,22 @@ export function login(name) {
          });
 }
 
+export function send_role(role) {
+  channel.push("set_role", {role: role})
+         .receive("ok", update_game)
+         .receive("error", resp => {
+           console.log("Unable to set role", resp)
+         });
+}
+
+export function send_ready(ready) {
+  channel.push("set_ready", {ready: ready})
+         .receive("ok", update_game)
+         .receive("error", resp => {
+           console.log("Unable to set ready", resp)
+         });
+}
+
 //functions to be used in app.js
 export function send_guess(guess) {
   channel.push("guess", guess)

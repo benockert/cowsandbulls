@@ -7,7 +7,7 @@ defmodule Bulls.Game do
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
-      code: random_code(), guesses: [], results: [], warning: ""
+      code: random_code(), guesses: [], results: [], warning: "",
     }
   end
 
@@ -21,12 +21,14 @@ defmodule Bulls.Game do
   end
 
   # sets the list of guesses and corresponding list of results for the view
-  def view(state, name) do
+  def view(state, name, role, ready) do
     guess_results = state.guesses
     |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
 
     %{
       uname: name,
+      role: role,
+      uready: ready,
       guesses: state.guesses,
       results: guess_results,
       warning: state.warning,

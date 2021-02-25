@@ -11,26 +11,56 @@ defmodule BullsWeb.GameChannel do
     socket = socket
     |> assign(:name, name)
     |> assign(:user, "")
+    |> assign(:role, "observer")
     game = GameServer.peek(name)
-    view = Game.view(game, "")
+    view = Game.view(game, "", "", false)
     {:ok, view, socket}
   end
 
   @impl true
   def handle_in("login", %{"uname" => user}, socket) do
    socket = assign(socket, :user, user)
+   socket = assign(socket, :ready, false)
    view = socket.assigns[:name]
    |> GameServer.peek()
-   |> Game.view(user)
+   |> Game.view(user, "", false);
+   {:reply, {:ok, view}, socket}
+ end
+
+ @impl true
+ def handle_in("set_role", %{"role" => role}, socket) do
+   user = socket.assigns[:user]
+   ready = socket.assigns[:ready]
+
+   socket = assign(socket, :role, role)
+
+   view = socket.assigns[:name] #game name (1 for now)
+   |> GameServer.peek()
+   |> Game.view(user, role, ready)
+
+   {:reply, {:ok, view}, socket}
+ end
+
+ @impl true
+ def handle_in("set_ready", %{"ready" => ready}, socket) do
+   socket = assign(socket, :ready, ready)
+   user = socket.assigns[:user]
+   role = socket.assigns[:role]
+   view = socket.assigns[:name] #game name (1 for now)
+   |> GameServer.peek()
+   |> Game.view(user, role, ready)
+
    {:reply, {:ok, view}, socket}
  end
 
   @impl true
   def handle_in("guess", %{"guess" => gu}, socket) do
     user = socket.assigns[:user]
+    role = socket.assigns[:role]
+    ready = socket.assigns[:ready]
     view = socket.assigns[:name]
     |> GameServer.guess(gu)
-    |> Game.view(user)
+    |> Game.view(user, role, ready)
     broadcast(socket, "view", view)
     {:reply, {:ok, view}, socket}
   end
@@ -38,9 +68,11 @@ defmodule BullsWeb.GameChannel do
   @impl true
   def handle_in("reset", _, socket) do
     user = socket.assigns[:user]
+    role = socket.assigns[:role]
+    ready = socket.assigns[:ready]
     view = socket.assigns[:name] #game name (1 for now)
     |> GameServer.reset()
-    |> Game.view(user)
+    |> Game.view(user, role, ready)
     broadcast(socket, "view", view)
     {:reply, {:ok, view}, socket}
   end
@@ -50,7 +82,7 @@ defmodule BullsWeb.GameChannel do
   @impl true
   def handle_out("view", msg, socket) do
     user = socket.assigns[:user]
-    msg = %{msg | name: user} #state variable for name
+    msg = %{msg | uname: user} #state variable for name
     push(socket, "view", msg)
     {:noreply, socket}
   end
