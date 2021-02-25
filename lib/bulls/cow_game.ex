@@ -2,10 +2,12 @@
 #from Nat Tuck's 02/09 lecture notes and hangman implementation
 defmodule Bulls.Game do
 
+  # server calls
+
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
-      code: random_code(), guesses: [], results: [], warning: ""
+      code: random_code(), guesses: [], results: [], warning: "",
     }
   end
 
@@ -18,6 +20,24 @@ defmodule Bulls.Game do
     end
   end
 
+  # sets the list of guesses and corresponding list of results for the view
+  def view(state, name, role, ready) do
+    guess_results = state.guesses
+    |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
+
+    %{
+      uname: name,
+      role: role,
+      uready: ready,
+      guesses: state.guesses,
+      results: guess_results,
+      warning: state.warning,
+    }
+  end
+
+  #_____________________________________________________________________________________
+  # GAME LOGIC
+
   # determines if a user guess is valid (4 unique numbers)
   def valid_guess(guess) do
     guess
@@ -27,18 +47,6 @@ defmodule Bulls.Game do
     |> Enum.filter(fn l -> Enum.member?(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], l) end)
     |> Enum.join("")
     |> String.length() == 4
-  end
-
-  # sets the list of guesses and corresponding list of results for the view
-  def view(state) do
-    guess_results = state.guesses
-    |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
-
-    %{
-      guesses: state.guesses,
-      results: guess_results,
-      warning: state.warning,
-    }
   end
 
   # returns the string "xByC" based on the number of bulls and cows

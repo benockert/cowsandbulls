@@ -19,164 +19,233 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import { connect, send_guess, reset } from "./socket.js";
+import { connect, send_guess, reset, login, send_role, send_ready } from "./socket.js";
 
-//forms the page when the user has lost the game
-function Defeat({ new_game }) {
-    return (
-        <div className="cowsAndBulls">
-            <p className="defeat">You lose!</p>
-            <button className="button" onClick={new_game}>
-                New Game
-            </button>
+function Welcome() {
+  const [user_name, setUserName] = useState("");
+  const [game_name, setGameName] = useState("");
+
+  function keyPress(io) {
+    if (io.key === "Enter") {
+      login(user_name);
+    }
+  }
+
+  return (
+    <div className="cowsAndBulls">
+    <h1>COWS AND BULLS</h1>
+    <div>
+    <p>Enter user name:</p>
+    <input
+    type="text"
+    value={user_name}
+    onChange={(un) => setUserName(un.target.value)}
+    onKeyPress={keyPress}
+    />
+    <br/>
+    <p>Enter game name:</p>
+    <input
+    type="text"
+    value={game_name}
+    onChange={(un) => setGameName(un.target.value)}
+    onKeyPress={keyPress}
+    />
+    <br/>
+    <br/>
+    <button className="button" onClick={() => login(user_name)}>
+    JOIN
+    </button>
+    </div>
+    </div>
+  );
+
+}
+
+function Game({game_state}) {
+  const [input, setInput] = useState([]);
+  let {uname, gname, guesses, results, warning} = game_state;
+
+  //when the 'Guess' button is pressed, sends the input field text to the server
+  function submit() {
+    send_guess({guess: input});
+    setInput("");
+  }
+
+  //from Nat Tuck's hangman implementation, updates the guess input field
+  //with the user's input
+  function updateGuess(input) {
+    let current_guess = input.target.value;
+    setInput(current_guess);
+  }
+
+  //from Nat Tuck's hangman implementation, handles the 'Enter' key
+  function keyPress(io) {
+    if (io.key === "Enter") {
+      submit();
+    }
+  }
+
+  //displays all guesses and results
+  function display_guesses() {
+    let content = [];
+
+    var i;
+    for(i=1; i<guesses.length+1; i++) {
+      content.push(
+        <tr key={i}>
+        <th>{i}</th>
+        <td>{guesses[i-1]}</td>
+        <td>{results[i-1]}</td>
+        </tr>
+      )
+    }
+
+    return content;
+  }
+
+  return (
+    <div className="cowsAndBulls">
+
+    <h1>COWS AND BULLS</h1>
+    <div>
+    <input
+    type="text"
+    value={input}
+    onChange={updateGuess}
+    onKeyPress={keyPress}
+    />
+    <div className="horizontal_space" />
+    <button className="button" onClick={submit}>
+    GUESS
+    </button>
+    <p>{warning}</p>
+    </div>
+    <table>
+    <thead>
+    <tr>
+    <th> </th>
+    <th>Guess</th>
+    <th>Result</th>
+    </tr>
+    </thead>
+    <tbody>
+    {display_guesses()}
+    </tbody>
+    </table>
+    </div>
+  );
+}
+
+function Lobby({game_state}) {
+  let {uname, gname, uready, role} = game_state;
+
+  function updateReady() {
+    send_ready(!uready);
+  }
+
+  //if the player radio button is active, display the 'Player ready' checkbox
+  function display_toggle_ready() {
+    console.log("toggle");
+    console.log(game_state.role)
+    if (game_state.role === "player") {
+      return (
+        <div>
+          <input type="checkbox" id="ready" name="ready" value="ready" onChange={updateReady} checked={uready}/>
+          <label htmlFor="ready">I'm ready!</label>
         </div>
+      );
+    }
+  }
+
+  function updateRole(input) {
+    send_role(input.target.value);
+  }
+
+  function displayPlayers() {
+    console.log("got here");
+    if (game_state.role === "player") {
+      return (
+        <tr>
+          <th>1</th>
+          <td>{game_state.uname}</td>
+          <td>{String(game_state.uready)}</td>
+        </tr>
+      );
+    }
+  }
+
+  return (
+    <div className="cowsAndBulls">
+      <h1>COWS AND BULLS</h1>
+      <div>
+        <p>game name: eventual game name</p>
+        <br/>
+        <p>user name: {game_state.uname}</p>
+        <input type="radio" id="player" name="role" value="player" onChange={updateRole} />
+        <label htmlFor="player">Player</label>
+        <input type="radio" name="role" value="observer" onChange={updateRole} />
+        <label htmlFor="observer">Observer</label>
+        <br/>
+        <div>{display_toggle_ready()}</div>
+      </div>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th> </th>
+              <th>Player Username</th>
+              <th>Player Ready</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayPlayers()}
+          </tbody>
+        </table>
+      </div>
+    </div>
     );
 }
 
-//forms the page when the user has won the game
-function Victory({ new_game }) {
-    return (
-        <div className="cowsAndBulls">
-            <p className="victory">You win!</p>
-            <button className="button" onClick={new_game}>
-                New Game
-            </button>
-        </div>
-    );
-}
-
+//handles login, gameover, victory display logic
 function Bulls() {
-    const [input, setInput] = useState([]);
-    const [state, setState] = useState({
-        guesses: [],
-        results: [],
-        warning: "",
-    });
 
-    let {guesses, results, warning} = state;
+  const [state, setState] = useState({
+    uname: "",
+    gname: "",
+    role: "",
+    uready: false,
+    guesses: [],
+    results: [],
+    warning: "",
+  });
 
-    //from Nat Tuck's 02/09 Hangman repository
-    useEffect(() => { connect(setState); });
+  useEffect(() => {
+    connect(setState);
+  });
 
-    if (results[results.length - 1] == "4B0C") {
-        //VICTORY
-        return <Victory new_game={reset} />;
-    }
+  let body = null;
 
-    //if the 8th guess is not the code, render the game over screen
-    //idea taken from Nat Tuck's hangman implementation
-    if (guesses.length === 8) {
-        //GAMEOVER
-        return <Defeat new_game={restart} />;
-    }
+  if (state.uname === "") {
+    console.log(state);
+    body = <Welcome />;
+  }
+  else if (1 === 1) {
+    body = <Lobby game_state={state} />;
+  }
+  else {
+    body = <Game game_state={state} />;
+  }
 
-    //restarts the game by resetting all state
-    function restart() {
-        //START OVER
-        console.log("Restarting game");
-        setInput("");
-        reset();
-    }
-
-    //when the 'Guess' button is pressed, sends the input field text to the server
-    function submit() {
-        send_guess({guess: input});
-        setInput("");
-        console.log(state);
-    }
-
-    //from Nat Tuck's hangman implementation, updates the guess input field
-    //with the user's input
-    function updateGuess(input) {
-        let current_guess = input.target.value;
-        setInput(current_guess);
-    }
-
-    //from Nat Tuck's hangman implementation, handles the 'Enter' key
-    function keyPress(io) {
-        if (io.key === "Enter") {
-            submit();
-        }
-    }
-
-    return (
-        <div className="cowsAndBulls">
-            <h1>COWS AND BULLS</h1>
-            <div>
-                <input
-                    type="text"
-                    value={input}
-                    onChange={updateGuess}
-                    onKeyPress={keyPress}
-                />
-                <div className="horizontal_space" />
-                <button className="button" onClick={submit}>
-                    GUESS
-                </button>
-                <div className="horizontal_space" />
-                <button className="button" onClick={restart}>
-                    RESET
-                </button>
-                <p>{warning}</p>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th> </th>
-                        <th>Guess</th>
-                        <th>Result</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>1</th>
-                        <td>{guesses[0]}</td>
-                        <td>{results[0]}</td>
-                    </tr>
-                    <tr>
-                        <th>2</th>
-                        <td>{guesses[1]}</td>
-                        <td>{results[1]}</td>
-                    </tr>
-                    <tr>
-                        <th>3</th>
-                        <td>{guesses[2]}</td>
-                        <td>{results[2]}</td>
-                    </tr>
-                    <tr>
-                        <th>4</th>
-                        <td>{guesses[3]}</td>
-                        <td>{results[3]}</td>
-                    </tr>
-                    <tr>
-                        <th>5</th>
-                        <td>{guesses[4]}</td>
-                        <td>{results[4]}</td>
-                    </tr>
-                    <tr>
-                        <th>6</th>
-                        <td>{guesses[5]}</td>
-                        <td>{results[5]}</td>
-                    </tr>
-                    <tr>
-                        <th>7</th>
-                        <td>{guesses[6]}</td>
-                        <td>{results[6]}</td>
-                    </tr>
-                    <tr>
-                        <th>8</th>
-                        <td>{guesses[7]}</td>
-                        <td>{results[7]}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    );
+  return (
+    <div className="container">
+    {body}
+    </div>
+  );
 }
 
 ReactDOM.render(
-	<React.StrictMode>
-		<Bulls />
-	</React.StrictMode>,
-	document.getElementById('root')
+  <React.StrictMode>
+  <Bulls />
+  </React.StrictMode>,
+  document.getElementById('root')
 );
