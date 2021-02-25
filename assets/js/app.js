@@ -49,9 +49,9 @@ function Welcome() {
   const [name, setName] = useState("");
 
   function keyPress(io) {
-      if (io.key === "Enter") {
-        login(name);
-      }
+    if (io.key === "Enter") {
+      login(name);
+    }
   }
 
   return (
@@ -76,15 +76,58 @@ function Welcome() {
 }
 
 function Lobby({game_state}) {
-  let {name, guesses, results, warning} = game_state;
+  let {name} = game_state;
+
+  //if the player radio button is active, display the 'Player ready' checkbox
+  function display_toggle_ready() {
+    if (document.getElementById('player')) {
+      return (
+        <input type="checkbox" id="ready" name="ready" value="ready">
+        <label for="ready">Player ready</label>
+      );
+    }
+  }
+
+  function is_ready(player_name) {
+    return "true";
+  }
 
   return (
     <div className="cowsAndBulls">
     <h1>COWS AND BULLS</h1>
     <div>
-    <p>user name: {name}</p>
     <p>game name: eventual game name<br/>
-
+    <p>user name: {game_state.name}</p>
+    <input type="radio" id="player" name="role" value="player">
+    <label for="player">Player</label>
+    <input type="radio" name="role" value="observer">
+    <label for="observer">Observer</label>
+    <br>
+    <div>
+    {display_toggle_ready()}
+    </div>
+    <div>
+    <table>
+    <thead>
+    <tr>
+    <th> </th>
+    <th>Player Username</th>
+    <th>Player Ready</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <th>1</th>
+    <td>{name}</td>
+    <td>{is_ready(name)}</td>
+    </tr>
+    </tbody>
+    </table>
+    <br>
+    <button className="button" onClick={leave}>
+    LEAVE
+    </button>
+    </div>
     </div>
     </div>
   );
@@ -119,6 +162,24 @@ function Game({game_state}) {
     }
   }
 
+  //displays all guesses and results
+  function display_guesses() {
+    let body = null;
+
+    var i;
+    for (i=0; i<guesses.length; i++) {
+      body += (
+        <tr>
+        <th></th>
+        <td>{guesses[i]}</td>
+        <td>{results[i]}</td>
+        </tr>
+      )
+    }
+
+    return body;
+  }
+
   return (
     <div className="cowsAndBulls">
     <button className="button" onClick={leave}>
@@ -151,46 +212,7 @@ function Game({game_state}) {
     </tr>
     </thead>
     <tbody>
-    <tr>
-    <th>1</th>
-    <td>{guesses[0]}</td>
-    <td>{results[0]}</td>
-    </tr>
-    <tr>
-    <th>2</th>
-    <td>{guesses[1]}</td>
-    <td>{results[1]}</td>
-    </tr>
-    <tr>
-    <th>3</th>
-    <td>{guesses[2]}</td>
-    <td>{results[2]}</td>
-    </tr>
-    <tr>
-    <th>4</th>
-    <td>{guesses[3]}</td>
-    <td>{results[3]}</td>
-    </tr>
-    <tr>
-    <th>5</th>
-    <td>{guesses[4]}</td>
-    <td>{results[4]}</td>
-    </tr>
-    <tr>
-    <th>6</th>
-    <td>{guesses[5]}</td>
-    <td>{results[5]}</td>
-    </tr>
-    <tr>
-    <th>7</th>
-    <td>{guesses[6]}</td>
-    <td>{results[6]}</td>
-    </tr>
-    <tr>
-    <th>8</th>
-    <td>{guesses[7]}</td>
-    <td>{results[7]}</td>
-    </tr>
+    {display_guesses()}
     </tbody>
     </table>
     </div>
@@ -203,6 +225,10 @@ function restart() {
   console.log("Restarting game");
   //setInput("");
   reset();
+}
+
+function leave() {
+  return <Welcome />;
 }
 
 //handles login, gameover, victory display logic
