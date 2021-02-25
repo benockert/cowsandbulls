@@ -2,6 +2,8 @@
 #from Nat Tuck's 02/09 lecture notes and hangman implementation
 defmodule Bulls.Game do
 
+  # server calls
+
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
@@ -18,17 +20,6 @@ defmodule Bulls.Game do
     end
   end
 
-  # determines if a user guess is valid (4 unique numbers)
-  def valid_guess(guess) do
-    guess
-    |> String.split("", trim: true)
-    |> MapSet.new()
-    |> MapSet.to_list()
-    |> Enum.filter(fn l -> Enum.member?(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], l) end)
-    |> Enum.join("")
-    |> String.length() == 4
-  end
-
   # sets the list of guesses and corresponding list of results for the view
   def view(state, name) do
     guess_results = state.guesses
@@ -40,6 +31,20 @@ defmodule Bulls.Game do
       results: guess_results,
       warning: state.warning,
     }
+  end
+
+  #_____________________________________________________________________________________
+  # GAME LOGIC
+
+  # determines if a user guess is valid (4 unique numbers)
+  def valid_guess(guess) do
+    guess
+    |> String.split("", trim: true)
+    |> MapSet.new()
+    |> MapSet.to_list()
+    |> Enum.filter(fn l -> Enum.member?(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], l) end)
+    |> Enum.join("")
+    |> String.length() == 4
   end
 
   # returns the string "xByC" based on the number of bulls and cows

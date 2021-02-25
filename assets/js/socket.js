@@ -56,7 +56,7 @@ socket.connect();
 
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {guesses: [], results: []};
+let state = {name: "", guesses: [], results: []};
 
 let callback = null;
 

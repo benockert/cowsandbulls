@@ -19,34 +19,11 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import { connect, send_guess, reset, login } from "./socket.js";
-
-//forms the page when the user has lost the game
-function Defeat({ new_game }) {
-  return (
-    <div className="cowsAndBulls">
-    <p className="defeat">You lose!</p>
-    <button className="button" onClick={new_game}>
-    New Game
-    </button>
-    </div>
-  );
-}
-
-//forms the page when the user has won the game
-function Victory({ new_game }) {
-  return (
-    <div className="cowsAndBulls">
-    <p className="victory">You win!</p>
-    <button className="button" onClick={new_game}>
-    New Game
-    </button>
-    </div>
-  );
-}
+import { connect, send_guess, reset, login, leave } from "./socket.js";
 
 function Welcome() {
-  const [name, setName] = useState("");
+  const [user_name, setuserName] = useState("");
+  const [game_name, setGameName] = useState("");
 
   function keyPress(io) {
     if (io.key === "Enter") {
@@ -61,13 +38,22 @@ function Welcome() {
     <p>Enter user name:</p>
     <input
     type="text"
-    value={name}
-    onChange={(un) => setName(un.target.value)}
+    value={user_name}
+    onChange={(un) => setUserName(un.target.value)}
     onKeyPress={keyPress}
     />
     <br/>
-    <button className="button" onClick={() => login(name)}>
-    START
+    <p>Enter game name:</p>
+    <input
+    type="text"
+    value={game_name}
+    onChange={(un) => setGameName(un.target.value)}
+    onKeyPress={keyPress}
+    />
+    <br/>
+    <br/>
+    <button className="button" onClick={() => login(user_name)}>
+    JOIN
     </button>
     </div>
     </div>
@@ -135,10 +121,6 @@ function Game({game_state}) {
   const [input, setInput] = useState([]);
   let {name, guesses, results, warning} = game_state;
 
-  function leave() {
-    return <Welcome />;
-  }
-
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
     send_guess({guess: input});
@@ -166,7 +148,7 @@ function Game({game_state}) {
     var i;
     for (i=1; i<guesses.length+1; i++) {
       content.push(
-        <tr>
+        <tr key={i}>
         <th>{i}</th>
         <td>{guesses[i-1]}</td>
         <td>{results[i-1]}</td>
@@ -194,10 +176,6 @@ function Game({game_state}) {
     <button className="button" onClick={submit}>
     GUESS
     </button>
-    <div className="horizontal_space" />
-    <button className="button" onClick={restart}>
-    RESET
-    </button>
     <p>{warning}</p>
     </div>
     <table>
@@ -216,23 +194,12 @@ function Game({game_state}) {
   );
 }
 
-//restarts the game by resetting all state
-function restart() {
-  //START OVER
-  console.log("Restarting game");
-  //setInput("");
-  reset();
-}
-
-function leave() {
-  return <Welcome />;
-}
-
 //handles login, gameover, victory display logic
 function Bulls() {
 
   const [state, setState] = useState({
-    name: "",
+    uname: "",
+    gname: "",
     guesses: [],
     results: [],
     warning: "",
@@ -249,14 +216,6 @@ function Bulls() {
   if (state.name === "") {
     console.log(state);
     body = <Welcome />;
-  }
-  else if (state.results[state.results.length - 1] == "4B0C") {
-    //VICTORY
-    body = <Victory new_game={restart} />;
-  }
-  else if (state.guesses.length === 8) {
-    //GAMEOVER
-    body = <Defeat new_game={restart} />;
   }
   else {
     body = <Game game_state={state} />;
