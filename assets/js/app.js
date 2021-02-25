@@ -46,12 +46,11 @@ function Victory({ new_game }) {
 }
 
 function Welcome() {
-  const [gname, setGname] = useState("");
-  const [uname, setUname] = useState("");
+  const [name, setName] = useState("");
 
   function keyPress(io) {
       if (io.key === "Enter") {
-        login(gname, uname);
+        login(name);
       }
   }
 
@@ -59,28 +58,33 @@ function Welcome() {
     <div className="cowsAndBulls">
     <h1>COWS AND BULLS</h1>
     <div>
-    <p>Enter game name:</p>
-    <input
-    type="text"
-    value={gname}
-    onChange={(gn) => setGname(gn.target.value)}
-    onKeyPress={keyPress}
-    />
-    <br/>
     <p>Enter user name:</p>
     <input
     type="text"
-    value={uname}
-    onChange={(un) => setUname(un.target.value)}
+    value={name}
+    onChange={(un) => setName(un.target.value)}
     onKeyPress={keyPress}
     />
     <br/>
-    <button className="button" onClick={() => login(gname, uname)}>
+    <button className="button" onClick={() => login(name)}>
     START
     </button>
-    <p>
-    {gname} :: {uname}
-    </p>
+    </div>
+    </div>
+  );
+
+}
+
+function Lobby({game_state}) {
+  let {name, guesses, results, warning} = game_state;
+
+  return (
+    <div className="cowsAndBulls">
+    <h1>COWS AND BULLS</h1>
+    <div>
+    <p>user name: {name}</p>
+    <p>game name: eventual game name<br/>
+
     </div>
     </div>
   );
@@ -89,7 +93,11 @@ function Welcome() {
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {gname, uname, guesses, results, warning} = game_state;
+  let {name, guesses, results, warning} = game_state;
+
+  function leave() {
+    return <Welcome />;
+  }
 
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
@@ -113,6 +121,9 @@ function Game({game_state}) {
 
   return (
     <div className="cowsAndBulls">
+    <button className="button" onClick={leave}>
+    LEAVE
+    </button>
     <h1>COWS AND BULLS</h1>
     <div>
     <input
@@ -198,8 +209,7 @@ function restart() {
 function Bulls() {
 
   const [state, setState] = useState({
-    game_name: "",
-    user_name: "",
+    name: "",
     guesses: [],
     results: [],
     warning: "",
@@ -213,7 +223,7 @@ function Bulls() {
 
   let body = null;
 
-  if (state.game_name === "" || state.user_name === "") {
+  if (state.name === "") {
     console.log(state);
     body = <Welcome />;
   }

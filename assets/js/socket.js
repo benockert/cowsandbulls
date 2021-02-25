@@ -54,16 +54,11 @@ let socket = new Socket("/socket", {params: {token: ""}});
 // Finally, connect to the socket:
 socket.connect();
 
-let state = {game_name: "1", guesses: [], results: []};
+let channel = socket.channel("cowsandbulls:1", {});
 
-//Cows and Bulls socket logic
-var cowsgame = "cowsandbulls:";
-var gamename = state.game_name;
-//connects to channel cowsandbulls:game_name
-let channel = socket.channel(cowsgame.concat(gamename), {});
+let state = {guesses: [], results: []};
 
 let callback = null;
-
 
 //function to update the state that the server sends
 function update_game(new_state) {
@@ -77,6 +72,15 @@ function update_game(new_state) {
 export function connect(call) {
   callback = call;
   callback(state)
+}
+
+//from Nat Tuck's 02/19
+export function login(name) {
+  channel.push("login", {name: name})
+         .receive("ok", update_game)
+         .receive("error", resp => {
+           console.log("Unable to start game", resp)
+         });
 }
 
 //functions to be used in app.js
@@ -96,13 +100,5 @@ channel.join()
       .receive("ok", update_game)
       .receive("error", resp => {console.log("Error joining game", resp)});
 
-//from Nat Tuck's 02/19
-export function login(gname, uname) {
-  channel.push("login", {game_name: gname, user_name: uname})
-         .receive("ok", update_game)
-         .receive("error", resp => {
-           console.log("Unable to start game", resp)
-         });
-}
 
 channel.on("view", update_game);

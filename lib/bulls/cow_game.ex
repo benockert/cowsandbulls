@@ -30,12 +30,12 @@ defmodule Bulls.Game do
   end
 
   # sets the list of guesses and corresponding list of results for the view
-  def view(state, uname) do
+  def view(state, name) do
     guess_results = state.guesses
     |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
 
     %{
-      user_name: uname,
+      name: name,
       guesses: state.guesses,
       results: guess_results,
       warning: state.warning,

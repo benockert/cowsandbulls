@@ -6,31 +6,29 @@ defmodule BullsWeb.GameChannel do
   alias Bulls.GameServer
 
   @impl true
-  def join("cowsandbulls:" <> game_name, _payload, socket) do
-    GameServer.start(game_name)
+  def join("cowsandbulls:" <> name, _payload, socket) do
+    GameServer.start(name)
     socket = socket
-    |> assign(:game_name, game_name)
+    |> assign(:name, name)
     |> assign(:user, "")
-    game = GameServer.peek(game_name)
+    game = GameServer.peek(name)
     view = Game.view(game, "")
     {:ok, view, socket}
   end
 
   @impl true
-  def handle_in("login", %{"game_name" => game_name, "user_name" => user_name}, socket) do
-   socket = assign(socket, :game_name, game_name)
-   socket = assign(socket, :user_name, user_name)
-
-   view = socket.assigns[:game_name]
+  def handle_in("login", %{"name" => user}, socket) do
+   socket = assign(socket, :user, user)
+   view = socket.assigns[:name]
    |> GameServer.peek()
-   |> Game.view(user_name)
+   |> Game.view(user)
    {:reply, {:ok, view}, socket}
  end
 
   @impl true
   def handle_in("guess", %{"guess" => gu}, socket) do
-    user = socket.assigns[:user_name]
-    view = socket.assigns[:game_name]
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
     |> GameServer.guess(gu)
     |> Game.view(user)
     broadcast(socket, "view", view)
@@ -39,8 +37,8 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_in("reset", _, socket) do
-    user = socket.assigns[:user_name]
-    view = socket.assigns[:game_name]
+    user = socket.assigns[:user]
+    view = socket.assigns[:name] #game name (1 for now)
     |> GameServer.reset()
     |> Game.view(user)
     broadcast(socket, "view", view)
@@ -51,8 +49,8 @@ defmodule BullsWeb.GameChannel do
 
   @impl true
   def handle_out("view", msg, socket) do
-    user = socket.assigns[:user_name]
-    msg = %{msg | name: user}
+    user = socket.assigns[:user]
+    msg = %{msg | name: user} #state variable for name
     push(socket, "view", msg)
     {:noreply, socket}
   end
