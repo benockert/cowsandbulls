@@ -56,7 +56,7 @@ socket.connect();
 
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {name: "", guesses: [], results: []};
+let state = {guesses: [], results: []};
 
 let callback = null;
 
@@ -76,7 +76,7 @@ export function connect(call) {
 
 //from Nat Tuck's 02/19
 export function login(name) {
-  channel.push("login", {name: name})
+  channel.push("login", {uname: name})
          .receive("ok", update_game)
          .receive("error", resp => {
            console.log("Unable to start game", resp)

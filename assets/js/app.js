@@ -19,15 +19,15 @@ import "phoenix_html"
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import { connect, send_guess, reset, login, leave } from "./socket.js";
+import { connect, send_guess, reset, login } from "./socket.js";
 
 function Welcome() {
-  const [user_name, setuserName] = useState("");
+  const [user_name, setUserName] = useState("");
   const [game_name, setGameName] = useState("");
 
   function keyPress(io) {
     if (io.key === "Enter") {
-      login(name);
+      login(user_name);
     }
   }
 
@@ -52,7 +52,7 @@ function Welcome() {
     />
     <br/>
     <br/>
-    <button className="button" onClick={() => login(user_name)}>
+    <button className="button" onClick={login(user_name)}>
     JOIN
     </button>
     </div>
@@ -61,65 +61,9 @@ function Welcome() {
 
 }
 
-// function Lobby({game_state}) {
-//   let {name} = game_state;
-//
-//   //if the player radio button is active, display the 'Player ready' checkbox
-//   function display_toggle_ready() {
-//     if (document.getElementById('player')) {
-//       return (
-//         <input type="checkbox" id="ready" name="ready" value="ready">
-//         <label for="ready">Player ready</label>
-//       );
-//     }
-//   }
-//
-//   function is_ready(player_name) {
-//     return "true";
-//   }
-//
-//   return (
-//     <div className="cowsAndBulls">
-//       <button className="button" onClick={leave}>
-//       LEAVE
-//       </button>
-//       <h1>COWS AND BULLS</h1>
-//       <div>
-//         <p>game name: eventual game name</p>
-//         <br/>
-//         <p>user name: {game_state.name}</p>
-//         <input type="radio" id="player" name="role" value="player">
-//         <label for="player">Player</label>
-//         <input type="radio" name="role" value="observer">
-//         <label for="observer">Observer</label>
-//         <br/>
-//         <div>{display_toggle_ready()}</div>
-//       </div>
-//       <div>
-//         <table>
-//           <thead>
-//             <tr>
-//               <th> </th>
-//               <th>Player Username</th>
-//               <th>Player Ready</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             <tr>
-//               <th>1</th>
-//               <td>{name}</td>
-//               <td>{is_ready(name)}</td>
-//             </tr>
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//     );
-// }
-
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {name, guesses, results, warning} = game_state;
+  let {uname, gname, guesses, results, warning} = game_state;
 
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
@@ -146,7 +90,7 @@ function Game({game_state}) {
     let content = [];
 
     var i;
-    for (i=1; i<guesses.length+1; i++) {
+    for(i=1; i<guesses.length+1; i++) {
       content.push(
         <tr key={i}>
         <th>{i}</th>
@@ -161,9 +105,7 @@ function Game({game_state}) {
 
   return (
     <div className="cowsAndBulls">
-    <button className="button" onClick={leave}>
-    LEAVE
-    </button>
+  
     <h1>COWS AND BULLS</h1>
     <div>
     <input
@@ -194,18 +136,65 @@ function Game({game_state}) {
   );
 }
 
+function Lobby({game_state}) {
+
+  //if the player radio button is active, display the 'Player ready' checkbox
+  function display_toggle_ready() {
+    console.log("toggle");
+    if (document.getElementById('player')) {
+      return (
+        <input type="checkbox" id="ready" name="ready" value="ready" />
+      );
+    }
+  }
+
+  return (
+    <div className="cowsAndBulls">
+      <h1>COWS AND BULLS</h1>
+      <div>
+        <p>game name: eventual game name</p>
+        <br/>
+        <p>user name: {game_state.uname}</p>
+        <input type="radio" id="player" name="role" value="player" />
+        <label for="player">Player</label>
+        <input type="radio" name="role" value="observer" />
+        <label for="observer">Observer</label>
+        <br/>
+        <div>{display_toggle_ready()}</div>
+      </div>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th> </th>
+              <th>Player Username</th>
+              <th>Player Ready</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>1</th>
+              <td>{game_state.uname}</td>
+              <td>{game_state.uready}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    );
+}
+
 //handles login, gameover, victory display logic
 function Bulls() {
 
   const [state, setState] = useState({
     uname: "",
     gname: "",
+    uready: false,
     guesses: [],
     results: [],
     warning: "",
   });
-
-  //let {game_name, user_name, guesses, results, warning} = state;
 
   useEffect(() => {
     connect(setState);
@@ -213,10 +202,13 @@ function Bulls() {
 
   let body = null;
 
-  if (state.name === "") {
+  if (state.uname === "") {
     console.log(state);
     body = <Welcome />;
   }
+  // else if (!state.uready){
+  //   body = <Lobby game_state={state} />;
+  // }
   else {
     body = <Game game_state={state} />;
   }

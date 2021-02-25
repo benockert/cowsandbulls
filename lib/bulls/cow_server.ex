@@ -44,7 +44,7 @@ defmodule Bulls.GameServer do
   # implementation
 
   def init(game) do
-    Process.send_after(self(), :pook, 10_000)
+    #Process.send_after(self(), :pook, 10_000)
     {:ok, game}
   end
 

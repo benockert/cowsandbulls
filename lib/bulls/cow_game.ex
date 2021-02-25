@@ -26,7 +26,7 @@ defmodule Bulls.Game do
     |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
 
     %{
-      name: name,
+      uname: name,
       guesses: state.guesses,
       results: guess_results,
       warning: state.warning,
