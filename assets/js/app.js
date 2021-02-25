@@ -75,64 +75,61 @@ function Welcome() {
 
 }
 
-function Lobby({game_state}) {
-  let {name} = game_state;
-
-  //if the player radio button is active, display the 'Player ready' checkbox
-  function display_toggle_ready() {
-    if (document.getElementById('player')) {
-      return (
-        <input type="checkbox" id="ready" name="ready" value="ready">
-        <label for="ready">Player ready</label>
-      );
-    }
-  }
-
-  function is_ready(player_name) {
-    return "true";
-  }
-
-  return (
-    <div className="cowsAndBulls">
-    <h1>COWS AND BULLS</h1>
-    <div>
-    <p>game name: eventual game name<br/>
-    <p>user name: {game_state.name}</p>
-    <input type="radio" id="player" name="role" value="player">
-    <label for="player">Player</label>
-    <input type="radio" name="role" value="observer">
-    <label for="observer">Observer</label>
-    <br>
-    <div>
-    {display_toggle_ready()}
-    </div>
-    <div>
-    <table>
-    <thead>
-    <tr>
-    <th> </th>
-    <th>Player Username</th>
-    <th>Player Ready</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <th>1</th>
-    <td>{name}</td>
-    <td>{is_ready(name)}</td>
-    </tr>
-    </tbody>
-    </table>
-    <br>
-    <button className="button" onClick={leave}>
-    LEAVE
-    </button>
-    </div>
-    </div>
-    </div>
-  );
-
-}
+// function Lobby({game_state}) {
+//   let {name} = game_state;
+//
+//   //if the player radio button is active, display the 'Player ready' checkbox
+//   function display_toggle_ready() {
+//     if (document.getElementById('player')) {
+//       return (
+//         <input type="checkbox" id="ready" name="ready" value="ready">
+//         <label for="ready">Player ready</label>
+//       );
+//     }
+//   }
+//
+//   function is_ready(player_name) {
+//     return "true";
+//   }
+//
+//   return (
+//     <div className="cowsAndBulls">
+//       <button className="button" onClick={leave}>
+//       LEAVE
+//       </button>
+//       <h1>COWS AND BULLS</h1>
+//       <div>
+//         <p>game name: eventual game name</p>
+//         <br/>
+//         <p>user name: {game_state.name}</p>
+//         <input type="radio" id="player" name="role" value="player">
+//         <label for="player">Player</label>
+//         <input type="radio" name="role" value="observer">
+//         <label for="observer">Observer</label>
+//         <br/>
+//         <div>{display_toggle_ready()}</div>
+//       </div>
+//       <div>
+//         <table>
+//           <thead>
+//             <tr>
+//               <th> </th>
+//               <th>Player Username</th>
+//               <th>Player Ready</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             <tr>
+//               <th>1</th>
+//               <td>{name}</td>
+//               <td>{is_ready(name)}</td>
+//             </tr>
+//           </tbody>
+//         </table>
+//       </div>
+//     </div>
+//     );
+// }
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
@@ -164,20 +161,20 @@ function Game({game_state}) {
 
   //displays all guesses and results
   function display_guesses() {
-    let body = null;
+    let content = [];
 
     var i;
-    for (i=0; i<guesses.length; i++) {
-      body += (
+    for (i=1; i<guesses.length+1; i++) {
+      content.push(
         <tr>
-        <th></th>
-        <td>{guesses[i]}</td>
-        <td>{results[i]}</td>
+        <th>{i}</th>
+        <td>{guesses[i-1]}</td>
+        <td>{results[i-1]}</td>
         </tr>
       )
     }
 
-    return body;
+    return content;
   }
 
   return (
