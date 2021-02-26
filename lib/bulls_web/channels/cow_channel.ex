@@ -77,7 +77,7 @@ defmodule BullsWeb.GameChannel do
     role = socket.assigns[:role]
     ready = socket.assigns[:ready]
     view = socket.assigns[:name]
-    |> GameServer.guess(gu)
+    |> GameServer.guess(gu, user)
     |> Game.view(user, role, ready)
     broadcast(socket, "view", view)
     {:reply, {:ok, view}, socket}

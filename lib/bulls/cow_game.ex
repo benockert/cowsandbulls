@@ -7,23 +7,23 @@ defmodule Bulls.Game do
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
-      code: random_code(), guesses: [], results: [], warning: "", players: [],
+      code: random_code(), guesses: [], warning: "", players: [],
     }
   end
 
   # appends the user's guess to the guess state if it is a valid guess
-  def guess(state, user_guess) do
+  def guess(state, user_guess, user_name) do
     if String.length(user_guess) !== 4 || !valid_guess(user_guess) do
       %{ state | warning: "Invalid guess: must be 4 unique numbers"}
     else
-      %{ state | guesses: state.guesses ++ [user_guess], warning: "" }
+      %{ state | guesses: state.guesses ++ [[user_name, user_guess]], warning: "" }
     end
   end
 
   # sets the list of guesses and corresponding list of results for the view
   def view(state, name, role, ready) do
-    guess_results = state.guesses
-    |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
+    guesses_results = state.guesses
+    |> Enum.map(fn g -> get_result(Enum.at(g, 0), Enum.at(g, 1), state.code, 0, 0, 0) end)
 
     players_only = state.players |> Enum.filter(fn pl -> Enum.at(pl, 1) === "player" end)
 
@@ -31,16 +31,17 @@ defmodule Bulls.Game do
       uname: name,
       urole: role,
       uready: ready,
-      guesses: state.guesses,
-      results: guess_results,
+      guesses: guesses_results,
       players: players_only,
       warning: state.warning,
     }
   end
 
+  #_____________________________________________________________________________________
+  # UPDATE PLAYER INFORMATION (NAME, ROLE, ISREADY)
+
+  # updates a player if a record already exists, or makes a new player entry
   def update_players(state, name, role, ready) do
-    #updates the players information, or
-    #%{state | players: state.players ++ [[name, role, ready]]}
     names = state.players |> Enum.map(fn n -> Enum.at(n, 0) end)
     if (!Enum.member?(names, name)) do
       %{ state | players: state.players ++ [[name, role, ready]]}
@@ -49,6 +50,7 @@ defmodule Bulls.Game do
     end
   end
 
+  # updates a player if necessary
   def update_player(player, name, role, ready) do
     if (Enum.at(player, 0) === name) do
       [name, role, ready]
@@ -72,21 +74,21 @@ defmodule Bulls.Game do
   end
 
   # returns the string "xByC" based on the number of bulls and cows
-  def get_result(_, _, bulls, cows, 4) do
-    Integer.to_string(bulls) <> "B" <> Integer.to_string(cows) <> "C"
+  def get_result(user, guess, _, bulls, cows, 4) do
+    [user, guess, Integer.to_string(bulls) <> "B" <> Integer.to_string(cows) <> "C"]
   end
 
   # accumulates the number of cows and bulls in the guess vs. code
-  def get_result(guess, code, bulls, cows, num) do
+  def get_result(user, guess, code, bulls, cows, num) do
     cond do
       # bull
       String.at(guess, num) == String.at(code, num) ->
-        get_result(guess, code, bulls + 1, cows, num + 1)
+        get_result(user, guess, code, bulls + 1, cows, num + 1)
       # cow
       String.contains?(code, String.at(guess, num)) ->
-        get_result(guess, code, bulls, cows + 1, num + 1)
+        get_result(user, guess, code, bulls, cows + 1, num + 1)
       # number not in code
-      true -> get_result(guess, code, bulls, cows, num + 1)
+      true -> get_result(user, guess, code, bulls, cows, num + 1)
     end
   end
 

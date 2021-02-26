@@ -63,7 +63,7 @@ function Welcome() {
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {uname, gname, urole, guesses, results, warning} = game_state;
+  let {uname, gname, urole, guesses, warning, players} = game_state;
 
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
@@ -89,13 +89,17 @@ function Game({game_state}) {
   function display_guesses() {
     let content = [];
 
+    //lastXGuesses= guesses.slice(Math.max(guesses.length - players.length, 0))
+
+
+
     var i;
     for(i=1; i<guesses.length+1; i++) {
       content.push(
         <tr key={i}>
-        <th>{i}</th>
-        <td>{guesses[i-1]}</td>
-        <td>{results[i-1]}</td>
+        <td>{guesses[i-1][0]}</td>
+        <td>{guesses[i-1][1]}</td>
+        <td>{guesses[i-1][2]}</td>
         </tr>
       )
     }
@@ -127,14 +131,14 @@ function Game({game_state}) {
     <div className="cowsAndBulls">
 
     <h1>COWS AND BULLS</h1>
-    <p>You are a(n): {urole}</p>
+    <p>Your role: {urole}</p>
     <div>
     {input_box()}
     </div>
     <table>
     <thead>
     <tr>
-    <th> </th>
+    <th>User</th>
     <th>Guess</th>
     <th>Result</th>
     </tr>
@@ -246,9 +250,7 @@ function Bulls() {
       var i;
       for(i=0; i<state.players.length; i++) {
         all_ready = all_ready && state.players[i][1] === "player" && state.players[i][2]
-        console.log("True?", state.players[i][1] === "player", state.players[i][2])
       }
-      console.log(all_ready)
       return all_ready
     }
   }

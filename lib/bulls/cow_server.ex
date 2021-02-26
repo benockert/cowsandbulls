@@ -33,8 +33,8 @@ defmodule Bulls.GameServer do
     GenServer.call(reg(name), {:reset, name})
   end
 
-  def guess(name, letter) do
-    GenServer.call(reg(name), {:guess, name, letter})
+  def guess(name, seq, user) do
+    GenServer.call(reg(name), {:guess, name, seq, user})
   end
 
   def update_player(name, user, role, ready) do
@@ -57,8 +57,8 @@ defmodule Bulls.GameServer do
     {:reply, game, game}
   end
 
-  def handle_call({:guess, name, letter}, _from, game) do
-    game = Game.guess(game, letter)
+  def handle_call({:guess, name, seq, user}, _from, game) do
+    game = Game.guess(game, seq, user)
     {:reply, game, game}
   end
 
