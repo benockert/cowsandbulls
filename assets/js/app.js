@@ -127,6 +127,7 @@ function Game({game_state}) {
     <div className="cowsAndBulls">
 
     <h1>COWS AND BULLS</h1>
+    <p>You are a(n): {urole}</p>
     <div>
     {input_box()}
     </div>
@@ -223,14 +224,14 @@ function Lobby({game_state}) {
 function Bulls() {
 
   const [state, setState] = useState({
-    gname: "",
-    uname: "",
-    urole: "",
-    uready: false,
-    guesses: [],
-    results: [],
-    players: [],
-    warning: "",
+    gname: "", //game name
+    uname: "", //user name
+    urole: "", //user role
+    uready: false, //user status
+    guesses: [], //guesses
+    results: [], //results
+    players: [], //all current players
+    warning: "", //warning message
   });
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+#adapted from Nat Tuck's 02/19 hangman code
 defmodule Bulls.GameServer do
   use GenServer
 
@@ -9,7 +10,6 @@ defmodule Bulls.GameServer do
     {:via, Registry, {Bulls.GameReg, name}}
   end
 
- #name is 1 for now
   def start(name) do
     spec = %{
       id: __MODULE__,
