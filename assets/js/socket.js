@@ -56,7 +56,7 @@ socket.connect();
 
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {guesses: [], results: []};
+let state = {players: [], guesses: [], results: []};
 
 let callback = null;
 
@@ -71,7 +71,7 @@ function update_game(new_state) {
 
 export function connect(call) {
   callback = call;
-  callback(state)
+  callback(state);
 }
 
 //from Nat Tuck's 02/19
