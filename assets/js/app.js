@@ -63,12 +63,17 @@ function Welcome() {
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {uname, gname, urole, guesses, warning, players} = game_state;
+  let {uname, gname, urole, guesses, warning, players, disabled} = game_state;
+
 
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
     send_guess({guess: input});
     setInput("");
+  }
+
+  function pass() {
+    send_guess({guess: "PASS"});
   }
 
   //from Nat Tuck's hangman implementation, updates the guess input field
@@ -89,14 +94,11 @@ function Game({game_state}) {
   function display_guesses() {
     let content = [];
 
-    //lastXGuesses= guesses.slice(Math.max(guesses.length - players.length, 0))
-
-
-
     var i;
     for(i=1; i<guesses.length+1; i++) {
       content.push(
         <tr key={i}>
+        <th>{String(Math.ceil(i / 3))}</th>
         <td>{guesses[i-1][0]}</td>
         <td>{guesses[i-1][1]}</td>
         <td>{guesses[i-1][2]}</td>
@@ -108,6 +110,7 @@ function Game({game_state}) {
   }
 
   function input_box() {
+    console.log("In input function");
     if (urole === "player") {
       return (
         <div>
@@ -118,8 +121,12 @@ function Game({game_state}) {
         onKeyPress={keyPress}
         />
         <div className="horizontal_space" />
-        <button className="button" onClick={submit}>
+        <button className="button" onClick={submit} disabled={disabled}>
         GUESS
+        </button>
+        <div className="horizontal_space" />
+        <button className="button" onClick={pass}>
+        PASS
         </button>
         <p>{warning}</p>
         </div>
@@ -129,8 +136,11 @@ function Game({game_state}) {
 
   return (
     <div className="cowsAndBulls">
-
+    <button className="button" onClick={() => login("")}>
+    LEAVE
+    </button>
     <h1>COWS AND BULLS</h1>
+    <p>Your name: {uname}</p>
     <p>Your role: {urole}</p>
     <div>
     {input_box()}
@@ -138,6 +148,7 @@ function Game({game_state}) {
     <table>
     <thead>
     <tr>
+    <th>Round</th>
     <th>User</th>
     <th>Guess</th>
     <th>Result</th>
@@ -189,12 +200,14 @@ function Lobby({game_state}) {
         )
       }
     }
-
     return content
   }
 
   return (
     <div className="cowsAndBulls">
+      <button className="button" onClick={() => login("")}>
+      LEAVE
+      </button>
       <h1>COWS AND BULLS</h1>
       <div>
         <p>game name: eventual game name</p>
@@ -236,6 +249,7 @@ function Bulls() {
     results: [], //results
     players: [], //all current players
     warning: "", //warning message
+    disabled: false,
   });
 
   useEffect(() => {
@@ -255,6 +269,44 @@ function Bulls() {
     }
   }
 
+  // function alreadyGuessed(unshown) {
+  //   console.log("unshown guesses:", unshown)
+  //   const u = unshown.map(g => g[0]);
+  //   console.log("users already guessed:", u);
+  //   console.log("Disabled?:", u.includes(state.uname))
+  //   return u.includes(state.uname);
+  // }
+  //
+  // function limit_guesses() {
+  //   // let showGuesses = [];
+  //   // let noGuessAllowed = true;
+  //   let hideGuesses = state.guesses.length % state.players.length;
+  //   console.log("Number of guesses to hide", hideGuesses);
+  //
+  //   if (hideGuesses === 0) {
+  //   } else {
+  //     state.guesses = state.guesses.slice(0, hideGuesses * -1);
+  //     console.log("Guesses without unshown", state.guesses);
+  //   }
+  //
+  //   if (hideGuesses === 0) {
+  //   } else {
+  //       state.disabled = alreadyGuessed(state.guesses.slice(hideGuesses * -1));
+  //       console.log("Status", state.disabled);
+  //   }
+  // }
+
+
+  function limit_guesses() {
+    let showGuesses = [];
+    let hideGuesses = state.guesses.length % state.players.length;
+
+    if (hideGuesses === 0) {
+    } else {
+      state.guesses = state.guesses.slice(0, hideGuesses * -1);
+    }
+  }
+
   let body = null;
 
   if (state.uname === "") {
@@ -265,7 +317,9 @@ function Bulls() {
     body = <Lobby game_state={state} />;
   }
   else {
+    limit_guesses()
     body = <Game game_state={state} />;
+    console.log("ended here")
   }
 
   return (

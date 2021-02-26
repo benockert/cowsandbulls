@@ -56,7 +56,7 @@ socket.connect();
 
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {players: [], guesses: []};
+let state = {players: [], guesses: [], disabled: false};
 
 let callback = null;
 

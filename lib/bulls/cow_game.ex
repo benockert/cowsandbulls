@@ -7,8 +7,13 @@ defmodule Bulls.Game do
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
-      code: random_code(), guesses: [], warning: "", players: [],
+      code: random_code(), guesses: [], warning: "", players: [], disabled: false,
     }
+  end
+
+  #deals with user passing their turn
+  def guess(state, "PASS", user_name) do
+      %{ state | guesses: state.guesses ++ [[user_name, "PASS"]], warning: ""}
   end
 
   # appends the user's guess to the guess state if it is a valid guess
@@ -34,6 +39,7 @@ defmodule Bulls.Game do
       guesses: guesses_results,
       players: players_only,
       warning: state.warning,
+      disabled: state.disabled,
     }
   end
 
@@ -71,6 +77,11 @@ defmodule Bulls.Game do
     |> Enum.filter(fn l -> Enum.member?(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], l) end)
     |> Enum.join("")
     |> String.length() == 4
+  end
+
+  #handles a user passing their turn
+  def get_result(user, "PASS", _, _, _, _) do
+    [user, "PASS", ""]
   end
 
   # returns the string "xByC" based on the number of bulls and cows
