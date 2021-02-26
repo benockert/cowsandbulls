@@ -7,7 +7,7 @@ defmodule Bulls.Game do
   # resets the state of the game with a new secret code and no guesses/results
   def new_game do
     %{
-      code: random_code(), guesses: [], results: [], warning: "",
+      code: random_code(), guesses: [], results: [], warning: "", players: [],
     }
   end
 
@@ -25,14 +25,36 @@ defmodule Bulls.Game do
     guess_results = state.guesses
     |> Enum.map(fn g -> get_result(g, state.code, 0, 0, 0) end)
 
+    players_only = state.players |> Enum.filter(fn pl -> Enum.at(pl, 1) === "player" end)
+
     %{
       uname: name,
-      role: role,
+      urole: role,
       uready: ready,
       guesses: state.guesses,
       results: guess_results,
+      players: players_only,
       warning: state.warning,
     }
+  end
+
+  def update_players(state, name, role, ready) do
+    #updates the players information, or
+    #%{state | players: state.players ++ [[name, role, ready]]}
+    names = state.players |> Enum.map(fn n -> Enum.at(n, 0) end)
+    if (!Enum.member?(names, name)) do
+      %{ state | players: state.players ++ [[name, role, ready]]}
+    else
+      %{state | players: state.players |> Enum.map(fn p -> update_player(p, name, role, ready) end)}
+    end
+  end
+
+  def update_player(player, name, role, ready) do
+    if (Enum.at(player, 0) === name) do
+      [name, role, ready]
+    else
+      player
+    end
   end
 
   #_____________________________________________________________________________________

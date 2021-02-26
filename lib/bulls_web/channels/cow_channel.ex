@@ -11,7 +11,8 @@ defmodule BullsWeb.GameChannel do
     socket = socket
     |> assign(:name, name)
     |> assign(:user, "")
-    |> assign(:role, "observer")
+    |> assign(:role, "")
+    |> assign(:ready, false)
     game = GameServer.peek(name)
     view = Game.view(game, "", "", false)
     {:ok, view, socket}
@@ -20,11 +21,26 @@ defmodule BullsWeb.GameChannel do
   @impl true
   def handle_in("login", %{"uname" => user}, socket) do
    socket = assign(socket, :user, user)
-   socket = assign(socket, :ready, false)
-   view = socket.assigns[:name]
-   |> GameServer.peek()
-   |> Game.view(user, "", false);
-   {:reply, {:ok, view}, socket}
+
+   name = socket.assigns[:name]
+   game = GameServer.peek(name)
+
+
+   if (Enum.member?(game.players |> Enum.map(fn n -> Enum.at(n, 0) end), user)) do
+     socket = socket
+     |> assign(:role, "player")
+     |> assign(:ready, true)
+     view = GameServer.update_player(name, user, "player", true) |> Game.view(user, "player", true)
+     broadcast(socket, "view", view)
+     {:reply, {:ok, view}, socket}
+   else
+     socket = socket
+     |> assign(:role, "observer")
+     |> assign(:ready, false)
+     view = GameServer.update_player(name, user, "observer", false) |> Game.view(user, "observer", true)
+     broadcast(socket, "view", view)
+     {:reply, {:ok, view}, socket}
+   end
  end
 
  @impl true
@@ -34,10 +50,11 @@ defmodule BullsWeb.GameChannel do
 
    socket = assign(socket, :role, role)
 
-   view = socket.assigns[:name] #game name (1 for now)
-   |> GameServer.peek()
+   name = socket.assigns[:name]
+   view = GameServer.update_player(name, user, role, ready)
    |> Game.view(user, role, ready)
 
+   broadcast(socket, "view", view)
    {:reply, {:ok, view}, socket}
  end
 
@@ -46,10 +63,11 @@ defmodule BullsWeb.GameChannel do
    socket = assign(socket, :ready, ready)
    user = socket.assigns[:user]
    role = socket.assigns[:role]
-   view = socket.assigns[:name] #game name (1 for now)
-   |> GameServer.peek()
+   name = socket.assigns[:name] #game name (1 for now)
+   view = GameServer.update_player(name, user, role, ready)
    |> Game.view(user, role, ready)
 
+   broadcast(socket, "view", view)
    {:reply, {:ok, view}, socket}
  end
 
@@ -82,11 +100,11 @@ defmodule BullsWeb.GameChannel do
   @impl true
   def handle_out("view", msg, socket) do
     user = socket.assigns[:user]
-    msg = %{msg | uname: user} #state variable for name
+    role = socket.assigns[:role]
+    ready = socket.assigns[:uready]
+    msg = %{msg | uname: user, urole: role, uready: ready}
     push(socket, "view", msg)
     {:noreply, socket}
   end
-
-
 
 end

@@ -63,7 +63,7 @@ function Welcome() {
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {uname, gname, guesses, results, warning} = game_state;
+  let {uname, gname, urole, guesses, results, warning} = game_state;
 
   //when the 'Guess' button is pressed, sends the input field text to the server
   function submit() {
@@ -103,22 +103,32 @@ function Game({game_state}) {
     return content;
   }
 
+  function input_box() {
+    if (urole === "player") {
+      return (
+        <div>
+        <input
+        type="text"
+        value={input}
+        onChange={updateGuess}
+        onKeyPress={keyPress}
+        />
+        <div className="horizontal_space" />
+        <button className="button" onClick={submit}>
+        GUESS
+        </button>
+        <p>{warning}</p>
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="cowsAndBulls">
 
     <h1>COWS AND BULLS</h1>
     <div>
-    <input
-    type="text"
-    value={input}
-    onChange={updateGuess}
-    onKeyPress={keyPress}
-    />
-    <div className="horizontal_space" />
-    <button className="button" onClick={submit}>
-    GUESS
-    </button>
-    <p>{warning}</p>
+    {input_box()}
     </div>
     <table>
     <thead>
@@ -137,7 +147,7 @@ function Game({game_state}) {
 }
 
 function Lobby({game_state}) {
-  let {uname, gname, uready, role} = game_state;
+  let {uname, gname, uready, urole, players} = game_state;
 
   function updateReady() {
     send_ready(!uready);
@@ -145,9 +155,7 @@ function Lobby({game_state}) {
 
   //if the player radio button is active, display the 'Player ready' checkbox
   function display_toggle_ready() {
-    console.log("toggle");
-    console.log(game_state.role)
-    if (game_state.role === "player") {
+    if (game_state.urole === "player") {
       return (
         <div>
           <input type="checkbox" id="ready" name="ready" value="ready" onChange={updateReady} checked={uready}/>
@@ -162,16 +170,22 @@ function Lobby({game_state}) {
   }
 
   function displayPlayers() {
-    console.log("got here");
-    if (game_state.role === "player") {
-      return (
-        <tr>
-          <th>1</th>
-          <td>{game_state.uname}</td>
-          <td>{String(game_state.uready)}</td>
-        </tr>
-      );
+    content = []
+
+    var i;
+    for(i=1; i<=players.length; i++) {
+      console.log(players[i-1][0], players[i-1][1], players[i-1][2])
+      if (players[i-1][1] === "player") {
+        content.push(
+          <tr key={i}>
+            <td>{String(players[i-1][0])}</td>
+            <td>{String(players[i-1][2])}</td>
+          </tr>
+        )
+      }
     }
+
+    return content
   }
 
   return (
@@ -181,9 +195,9 @@ function Lobby({game_state}) {
         <p>game name: eventual game name</p>
         <br/>
         <p>user name: {game_state.uname}</p>
-        <input type="radio" id="player" name="role" value="player" onChange={updateRole} />
+        <input type="radio" id="player" name="role" value="player" onChange={updateRole} checked={urole === "player"}/>
         <label htmlFor="player">Player</label>
-        <input type="radio" name="role" value="observer" onChange={updateRole} />
+        <input type="radio" name="role" value="observer" onChange={updateRole} checked={urole === "observer"}/>
         <label htmlFor="observer">Observer</label>
         <br/>
         <div>{display_toggle_ready()}</div>
@@ -192,7 +206,6 @@ function Lobby({game_state}) {
         <table>
           <thead>
             <tr>
-              <th> </th>
               <th>Player Username</th>
               <th>Player Ready</th>
             </tr>
@@ -210,12 +223,13 @@ function Lobby({game_state}) {
 function Bulls() {
 
   const [state, setState] = useState({
-    uname: "",
     gname: "",
-    role: "",
+    uname: "",
+    urole: "",
     uready: false,
     guesses: [],
     results: [],
+    players: [],
     warning: "",
   });
 
@@ -223,13 +237,28 @@ function Bulls() {
     connect(setState);
   });
 
+  function all_players_ready() {
+    if (state.players.length == 0) {
+      return false;
+    } else {
+      let all_ready = true;
+      var i;
+      for(i=0; i<state.players.length; i++) {
+        all_ready = all_ready && state.players[i][1] === "player" && state.players[i][2]
+        console.log("True?", state.players[i][1] === "player", state.players[i][2])
+      }
+      console.log(all_ready)
+      return all_ready
+    }
+  }
+
   let body = null;
 
   if (state.uname === "") {
     console.log(state);
     body = <Welcome />;
   }
-  else if (1 === 1) {
+  else if (!all_players_ready()) {
     body = <Lobby game_state={state} />;
   }
   else {
