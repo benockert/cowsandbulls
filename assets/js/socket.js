@@ -56,7 +56,7 @@ socket.connect();
 
 let channel = socket.channel("cowsandbulls:1", {});
 
-let state = {players: [], guesses: [], results: []};
+let state = {players: [], guesses: [], disabled: false, score: []};
 
 let callback = null;
 
@@ -101,13 +101,13 @@ export function send_ready(ready) {
 
 //functions to be used in app.js
 export function send_guess(guess) {
-  channel.push("guess", guess)
+  channel.push("guess", guess) //check here for bug
          .receive("ok", update_game)
          .receive("error", resp => {console.log("Error sending guess", resp)});
 }
 
-export function reset() {
-  channel.push("reset", {})
+export function reset(scoreboard) {
+  channel.push("reset", {score: scoreboard})
          .receive("ok", update_game)
          .receive("error", resp => {console.log("Error resetting game", resp)});
 }

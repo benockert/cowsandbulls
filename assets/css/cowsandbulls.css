@@ -38,6 +38,16 @@ td {
 	display: inline-block;
 }
 
+.button:disabled, button[disabled] {
+	background-color: grey;
+	color: white;
+	font-size: 25px;
+	border-radius: 8px;
+	border: none;
+	padding: 14px 30px;
+	display: inline-block;
+}
+
 input[type=text] {
 	font-size: 25px;
 	padding: 10px 5px;

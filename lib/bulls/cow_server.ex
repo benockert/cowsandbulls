@@ -1,3 +1,4 @@
+#adapted from Nat Tuck's 02/19 hangman code
 defmodule Bulls.GameServer do
   use GenServer
 
@@ -9,7 +10,6 @@ defmodule Bulls.GameServer do
     {:via, Registry, {Bulls.GameReg, name}}
   end
 
- #name is 1 for now
   def start(name) do
     spec = %{
       id: __MODULE__,
@@ -21,7 +21,7 @@ defmodule Bulls.GameServer do
   end
 
   def start_link(name) do
-    game = Game.new_game
+    game = Game.new_game([])
     GenServer.start_link(
       __MODULE__,
       game,
@@ -29,12 +29,12 @@ defmodule Bulls.GameServer do
     )
   end
 
-  def reset(name) do
-    GenServer.call(reg(name), {:reset, name})
+  def reset(name, sb) do
+    GenServer.call(reg(name), {:reset, name, sb})
   end
 
-  def guess(name, letter) do
-    GenServer.call(reg(name), {:guess, name, letter})
+  def guess(name, seq, user) do
+    GenServer.call(reg(name), {:guess, name, seq, user})
   end
 
   def update_player(name, user, role, ready) do
@@ -52,13 +52,13 @@ defmodule Bulls.GameServer do
     {:ok, game}
   end
 
-  def handle_call({:reset, name}, _from, game) do
-    game = Game.new_game
+  def handle_call({:reset, name, scoreboard}, _from, game) do
+    game = Game.new_game(scoreboard)
     {:reply, game, game}
   end
 
-  def handle_call({:guess, name, letter}, _from, game) do
-    game = Game.guess(game, letter)
+  def handle_call({:guess, name, seq, user}, _from, game) do
+    game = Game.guess(game, seq, user)
     {:reply, game, game}
   end
 
