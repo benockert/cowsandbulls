@@ -7,7 +7,7 @@ defmodule Bulls.Game do
   # resets the state of the game with a new secret code and no guesses/results
   def new_game(scoreboard) do
     %{
-      code: "1234", guesses: [], warning: "", players: [], disabled: false, score: scoreboard,
+      code: random_code(), guesses: [], warning: "", players: [], disabled: false, score: scoreboard,
     }
   end
 
@@ -20,7 +20,7 @@ defmodule Bulls.Game do
   def guess(state, user_guess, user_name) do
     cond do
         user_guess === state.code ->
-        %{ state | score: state.score ++ [user_name]}
+        %{ state | guesses: state.guesses ++ [[user_name, user_guess]], score: state.score ++ [user_name]}
         String.length(user_guess) !== 4 || !valid_guess(user_guess) ->
         %{ state | warning: "Invalid guess: must be 4 unique numbers"}
         true -> %{ state | guesses: state.guesses ++ [[user_name, user_guess]], warning: "" }

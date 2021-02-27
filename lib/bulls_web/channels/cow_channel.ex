@@ -89,7 +89,6 @@ defmodule BullsWeb.GameChannel do
     socket = assign(socket, :role, "observer")
     socket = assign(socket, :ready, false)
     view1 = socket.assigns[:name] |> GameServer.reset(sb)
-    #view2 = GameServer.update_player(view1, user, "player", false)
     view = Game.view(view1, user, "observer", false)
     broadcast(socket, "view", view)
     {:reply, {:ok, view}, socket}

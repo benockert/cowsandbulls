@@ -21,6 +21,7 @@ import ReactDOM from 'react-dom';
 
 import { connect, send_guess, reset, login, send_role, send_ready } from "./socket.js";
 
+//Login screen
 function Welcome() {
   const [user_name, setUserName] = useState("");
   const [game_name, setGameName] = useState("");
@@ -33,34 +34,35 @@ function Welcome() {
 
   return (
     <div className="cowsAndBulls">
-    <h1>COWS AND BULLS</h1>
-    <div>
-    <p>Enter user name:</p>
-    <input
-    type="text"
-    value={user_name}
-    onChange={(un) => setUserName(un.target.value)}
-    onKeyPress={keyPress}
-    />
-    <br/>
-    <p>Enter game name:</p>
-    <input
-    type="text"
-    value={game_name}
-    onChange={(un) => setGameName(un.target.value)}
-    onKeyPress={keyPress}
-    />
-    <br/>
-    <br/>
-    <button className="button" onClick={() => login(user_name)}>
-    JOIN
-    </button>
-    </div>
+      <h1>COWS AND BULLS</h1>
+      <div>
+        <p>Enter user name:</p>
+        <input
+        type="text"
+        value={user_name}
+        onChange={(un) => setUserName(un.target.value)}
+        onKeyPress={keyPress}
+        />
+        <br/>
+        <p>Enter game name:</p>
+        <input
+        type="text"
+        value={game_name}
+        onChange={(un) => setGameName(un.target.value)}
+        onKeyPress={keyPress}
+        />
+        <br/>
+        <br/>
+        <button className="button" onClick={() => login(user_name)}>
+        JOIN
+        </button>
+      </div>
     </div>
   );
 
 }
 
+//main game components
 function Game({game_state}) {
   const [input, setInput] = useState([]);
   let {uname, gname, urole, guesses, warning, players, disabled, score} = game_state;
@@ -90,6 +92,13 @@ function Game({game_state}) {
     }
   }
 
+  if (guesses.length !== 0) {
+    var last_round = guesses.slice(players.length * -1).map(x => x[2]);
+    if (last_round.includes("4B0C")) {
+      reset(score)
+    }
+  }
+
   //displays all guesses and results
   function display_guesses() {
     let content = [];
@@ -98,10 +107,10 @@ function Game({game_state}) {
     for(i=1; i<guesses.length+1; i++) {
       content.push(
         <tr key={i}>
-        <th>{String(Math.ceil(i / players.length))}</th>
-        <td>{guesses[i-1][0]}</td>
-        <td>{guesses[i-1][1]}</td>
-        <td>{guesses[i-1][2]}</td>
+          <th>{String(Math.ceil(i / players.length))}</th>
+          <td>{guesses[i-1][0]}</td>
+          <td>{guesses[i-1][1]}</td>
+          <td>{guesses[i-1][2]}</td>
         </tr>
       )
     }
@@ -110,25 +119,24 @@ function Game({game_state}) {
   }
 
   function input_box() {
-    console.log("In input function");
     if (urole === "player") {
       return (
         <div>
-        <input
-        type="text"
-        value={input}
-        onChange={updateGuess}
-        onKeyPress={keyPress}
-        />
-        <div className="horizontal_space" />
-        <button className="button" onClick={submit} disabled={disabled}>
-        GUESS
-        </button>
-        <div className="horizontal_space" />
-        <button className="button" onClick={pass}>
-        PASS
-        </button>
-        <p>{warning}</p>
+          <input
+          type="text"
+          value={input}
+          onChange={updateGuess}
+          onKeyPress={keyPress}
+          />
+          <div className="horizontal_space" />
+          <button className="button" onClick={submit} disabled={disabled}>
+          GUESS
+          </button>
+          <div className="horizontal_space" />
+          <button className="button" onClick={pass}>
+          PASS
+          </button>
+          <p>{warning}</p>
         </div>
       );
     }
@@ -136,31 +144,28 @@ function Game({game_state}) {
 
   return (
     <div className="cowsAndBulls">
-    <button className="button" onClick={() => login("")}>
-    LEAVE
-    </button>
-    <button className="button" onClick={() => reset(score)}>
-    RESTART
-    </button>
-    <h1>COWS AND BULLS</h1>
-    <p>Your name: {uname}</p>
-    <p>Your role: {urole}</p>
-    <div>
-    {input_box()}
-    </div>
-    <table>
-    <thead>
-    <tr>
-    <th>Round</th>
-    <th>User</th>
-    <th>Guess</th>
-    <th>Result</th>
-    </tr>
-    </thead>
-    <tbody>
-    {display_guesses()}
-    </tbody>
-    </table>
+      <button className="button" onClick={() => login("")}>
+      LEAVE
+      </button>
+      <h1>COWS AND BULLS</h1>
+      <p>Your name: {uname}</p>
+      <p>Your role: {urole}</p>
+      <div>
+        {input_box()}
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Round #</th>
+            <th>User</th>
+            <th>Guess</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {display_guesses()}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -188,30 +193,37 @@ function Lobby({game_state}) {
     send_role(input.target.value);
   }
 
+  //displays all the winners and the number of times they have won
   function displayWinners() {
-    content = []
+    let winners = new Map();
+    let content = []
 
     var i;
     for(i=1; i<=score.length; i++) {
-      content.push(
-          <tr key={i}>
-            <td>{score[i-1]}</td>
-            <td></td>
-          </tr>
-      )
-
+      let wins = winners.get(score[i])
+      if(wins) {
+        winners = winners.set(score[i], wins + 1);
+      } else {
+        winners = winners.set(score[i], 1);
+      }
     }
-    return content
+
+    for (let [key, value] of winners.entries()) {
+      content.push(
+        <tr key={key}>
+          <td>{key}</td>
+          <td>{value}</td>
+        </tr>
+      )
+    }
+    return content;
   }
 
-
-
   function displayPlayers() {
-    content = []
+    let content = []
 
     var i;
     for(i=1; i<=players.length; i++) {
-      console.log(players[i-1][0], players[i-1][1], players[i-1][2])
       if (players[i-1][1] === "player") {
         content.push(
           <tr key={i}>
@@ -231,9 +243,7 @@ function Lobby({game_state}) {
       </button>
       <h1>COWS AND BULLS</h1>
       <div>
-        <p>game name: eventual game name</p>
-        <br/>
-        <p>user name: {game_state.uname}</p>
+        <p>Your name: {game_state.uname}</p>
         <input type="radio" id="player" name="role" value="player" onChange={updateRole} checked={urole === "player"}/>
         <label htmlFor="player">Player</label>
         <input type="radio" name="role" value="observer" onChange={updateRole} checked={urole === "observer"}/>
@@ -242,22 +252,22 @@ function Lobby({game_state}) {
         <div>{display_toggle_ready()}</div>
       </div>
       <div>
-        <table>
+        <table className="players">
           <thead>
             <tr>
-              <th>Player Username</th>
-              <th>Player Ready</th>
+              <th>Player Name</th>
+              <th>Player Ready?</th>
             </tr>
           </thead>
           <tbody>
             {displayPlayers()}
           </tbody>
         </table>
-        <table>
+        <table className="winner">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Count</th>
+              <th>Player Name</th>
+              <th># Wins</th>
             </tr>
           </thead>
           <tbody>
@@ -281,8 +291,7 @@ function Bulls() {
     results: [], //results
     players: [], //all current players
     warning: "", //warning message
-    disabled: false,
-    score: [],
+    score: [], //scoreboard
   });
 
   useEffect(() => {
@@ -302,34 +311,6 @@ function Bulls() {
     }
   }
 
-  // function alreadyGuessed(unshown) {
-  //   console.log("unshown guesses:", unshown)
-  //   const u = unshown.map(g => g[0]);
-  //   console.log("users already guessed:", u);
-  //   console.log("Disabled?:", u.includes(state.uname))
-  //   return u.includes(state.uname);
-  // }
-  //
-  // function limit_guesses() {
-  //   // let showGuesses = [];
-  //   // let noGuessAllowed = true;
-  //   let hideGuesses = state.guesses.length % state.players.length;
-  //   console.log("Number of guesses to hide", hideGuesses);
-  //
-  //   if (hideGuesses === 0) {
-  //   } else {
-  //     state.guesses = state.guesses.slice(0, hideGuesses * -1);
-  //     console.log("Guesses without unshown", state.guesses);
-  //   }
-  //
-  //   if (hideGuesses === 0) {
-  //   } else {
-  //       state.disabled = alreadyGuessed(state.guesses.slice(hideGuesses * -1));
-  //       console.log("Status", state.disabled);
-  //   }
-  // }
-
-
   function limit_guesses() {
     let showGuesses = [];
     let hideGuesses = state.guesses.length % state.players.length;
@@ -343,7 +324,6 @@ function Bulls() {
   let body = null;
 
   if (state.uname === "") {
-    console.log(state);
     body = <Welcome />;
   }
   else if (!all_players_ready()) {
@@ -352,12 +332,11 @@ function Bulls() {
   else {
     limit_guesses()
     body = <Game game_state={state} />;
-    console.log("ended here")
   }
 
   return (
     <div className="container">
-    {body}
+      {body}
     </div>
   );
 }

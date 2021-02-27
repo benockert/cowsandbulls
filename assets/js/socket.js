@@ -106,8 +106,8 @@ export function send_guess(guess) {
          .receive("error", resp => {console.log("Error sending guess", resp)});
 }
 
-export function reset(scoreboard) {
-  channel.push("reset", {score: scoreboard})
+export function reset(score) {
+  channel.push("reset", {score: score})
          .receive("ok", update_game)
          .receive("error", resp => {console.log("Error resetting game", resp)});
 }

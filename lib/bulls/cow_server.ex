@@ -1,4 +1,5 @@
-#adapted from Nat Tuck's 02/19 hangman code
+#adapted from Nat Tuck's 02/19 hangman code; reg, start, start_link, reset, guess, peek
+#were taken from hangman
 defmodule Bulls.GameServer do
   use GenServer
 
@@ -23,9 +24,9 @@ defmodule Bulls.GameServer do
   def start_link(name) do
     game = Game.new_game([])
     GenServer.start_link(
-      __MODULE__,
-      game,
-      name: reg(name)
+    __MODULE__,
+    game,
+    name: reg(name)
     )
   end
 
@@ -46,9 +47,8 @@ defmodule Bulls.GameServer do
   end
 
   # implementation
-
+  
   def init(game) do
-    #Process.send_after(self(), :pook, 10_000)
     {:ok, game}
   end
 
@@ -69,13 +69,5 @@ defmodule Bulls.GameServer do
 
   def handle_call({:peek, _name}, _from, game) do
     {:reply, game, game}
-  end
-
-  def handle_info(:pook, game) do
-    BullsWeb.Endpoint.broadcast!(
-      "cowsandbulls:1", # FIXME: Game name should be in state
-      "view",
-      Game.view(game, ""))
-    {:noreply, game}
   end
 end

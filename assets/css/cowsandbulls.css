@@ -2,24 +2,27 @@
 	font-family: "Verdana", "Helvetica", "sans-serif";
 }
 
-.defeat {
-	font-size: 30px;
-	color: red;
+.winner {
+	position: absolute;
+	top: 0;
+	right:0;
+	width:350px;
 }
 
-.victory {
-	font-size: 30px;
-	color: green;
+.players {
+	width:400px;
 }
+
 
 table {
-	width: 400px;
+	width: 900px;
 	height: 60px;
 }
 
 th {
 	font-size: 30px;
 	height: 50px;
+	width: 200px;
 	vertical-align: bottom;
 }
 
