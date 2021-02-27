@@ -5,9 +5,9 @@ defmodule Bulls.Game do
   # server calls
 
   # resets the state of the game with a new secret code and no guesses/results
-  def new_game do
+  def new_game(scoreboard) do
     %{
-      code: random_code(), guesses: [], warning: "", players: [], disabled: false,
+      code: "1234", guesses: [], warning: "", players: [], disabled: false, score: scoreboard,
     }
   end
 
@@ -18,18 +18,24 @@ defmodule Bulls.Game do
 
   # appends the user's guess to the guess state if it is a valid guess
   def guess(state, user_guess, user_name) do
-    if String.length(user_guess) !== 4 || !valid_guess(user_guess) do
-      %{ state | warning: "Invalid guess: must be 4 unique numbers"}
-    else
-      %{ state | guesses: state.guesses ++ [[user_name, user_guess]], warning: "" }
+    cond do
+        user_guess === state.code ->
+        %{ state | score: state.score ++ [user_name]}
+        String.length(user_guess) !== 4 || !valid_guess(user_guess) ->
+        %{ state | warning: "Invalid guess: must be 4 unique numbers"}
+        true -> %{ state | guesses: state.guesses ++ [[user_name, user_guess]], warning: "" }
     end
   end
 
   # sets the list of guesses and corresponding list of results for the view
   def view(state, name, role, ready) do
+    # gets the results of user guesses
     guesses_results = state.guesses
     |> Enum.map(fn g -> get_result(Enum.at(g, 0), Enum.at(g, 1), state.code, 0, 0, 0) end)
 
+    #scoreboard = update_winners(name, state.score, guesses_results)
+
+    # removes non players from the list of observers
     players_only = state.players |> Enum.filter(fn pl -> Enum.at(pl, 1) === "player" end)
 
     %{
@@ -40,7 +46,33 @@ defmodule Bulls.Game do
       players: players_only,
       warning: state.warning,
       disabled: state.disabled,
+      score: state.score,
     }
+  end
+
+  #_____________________________________________________________________________________
+  # UPDATES THE SCOREBOARD IF A USER HAS GUESSED THE CORRECT NUMBER
+  def update_winners(name, scoreboard, results) do
+    winners = scoreboard |> Enum.map(fn n -> Enum.at(n, 0) end)
+    if (!Enum.member?(winners, name)) do
+      #new winnter
+      [[name, 0] | scoreboard]
+    else
+      #update existing winner
+      results |> Enum.map(fn r -> victory(r, name, scoreboard) end)
+    end
+  end
+
+  def victory(guess, guesser, scoreboard) do
+    if (Enum.at(guess, 0) === guesser && Enum.at(guess, 2) === "4B0C") do
+      scoreboard |> Enum.map(fn w -> new_win(w, guesser) end)
+    end
+  end
+
+  def new_win(score_entry, victor) do
+    if (Enum.at(score_entry, 0) === victor) do
+      [victor, Enum.at(score_entry, 1) + 1]
+    end
   end
 
   #_____________________________________________________________________________________
@@ -66,7 +98,7 @@ defmodule Bulls.Game do
   end
 
   #_____________________________________________________________________________________
-  # GAME LOGIC
+  # GAME LOGIC (VALIDATE, RESULTS, NEW CODE)
 
   # determines if a user guess is valid (4 unique numbers)
   def valid_guess(guess) do

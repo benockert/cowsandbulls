@@ -21,7 +21,7 @@ defmodule Bulls.GameServer do
   end
 
   def start_link(name) do
-    game = Game.new_game
+    game = Game.new_game([])
     GenServer.start_link(
       __MODULE__,
       game,
@@ -29,8 +29,8 @@ defmodule Bulls.GameServer do
     )
   end
 
-  def reset(name) do
-    GenServer.call(reg(name), {:reset, name})
+  def reset(name, sb) do
+    GenServer.call(reg(name), {:reset, name, sb})
   end
 
   def guess(name, seq, user) do
@@ -52,8 +52,8 @@ defmodule Bulls.GameServer do
     {:ok, game}
   end
 
-  def handle_call({:reset, name}, _from, game) do
-    game = Game.new_game
+  def handle_call({:reset, name, scoreboard}, _from, game) do
+    game = Game.new_game(scoreboard)
     {:reply, game, game}
   end
 

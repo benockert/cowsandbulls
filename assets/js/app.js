@@ -63,7 +63,7 @@ function Welcome() {
 
 function Game({game_state}) {
   const [input, setInput] = useState([]);
-  let {uname, gname, urole, guesses, warning, players, disabled} = game_state;
+  let {uname, gname, urole, guesses, warning, players, disabled, score} = game_state;
 
 
   //when the 'Guess' button is pressed, sends the input field text to the server
@@ -98,7 +98,7 @@ function Game({game_state}) {
     for(i=1; i<guesses.length+1; i++) {
       content.push(
         <tr key={i}>
-        <th>{String(Math.ceil(i / 3))}</th>
+        <th>{String(Math.ceil(i / players.length))}</th>
         <td>{guesses[i-1][0]}</td>
         <td>{guesses[i-1][1]}</td>
         <td>{guesses[i-1][2]}</td>
@@ -139,6 +139,9 @@ function Game({game_state}) {
     <button className="button" onClick={() => login("")}>
     LEAVE
     </button>
+    <button className="button" onClick={() => reset(score)}>
+    RESTART
+    </button>
     <h1>COWS AND BULLS</h1>
     <p>Your name: {uname}</p>
     <p>Your role: {urole}</p>
@@ -163,7 +166,7 @@ function Game({game_state}) {
 }
 
 function Lobby({game_state}) {
-  let {uname, gname, uready, urole, players} = game_state;
+  let {uname, gname, uready, urole, players, score} = game_state;
 
   function updateReady() {
     send_ready(!uready);
@@ -184,6 +187,24 @@ function Lobby({game_state}) {
   function updateRole(input) {
     send_role(input.target.value);
   }
+
+  function displayWinners() {
+    content = []
+
+    var i;
+    for(i=1; i<=score.length; i++) {
+      content.push(
+          <tr key={i}>
+            <td>{score[i-1]}</td>
+            <td></td>
+          </tr>
+      )
+
+    }
+    return content
+  }
+
+
 
   function displayPlayers() {
     content = []
@@ -232,6 +253,17 @@ function Lobby({game_state}) {
             {displayPlayers()}
           </tbody>
         </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayWinners()}
+          </tbody>
+        </table>
       </div>
     </div>
     );
@@ -250,6 +282,7 @@ function Bulls() {
     players: [], //all current players
     warning: "", //warning message
     disabled: false,
+    score: [],
   });
 
   useEffect(() => {
