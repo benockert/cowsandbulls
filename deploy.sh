@@ -3,7 +3,7 @@
 #most of structure taken from Nat Tuck's hangman repo 
 
 export MIX_ENV=prod
-export PORT=4850
+export PORT=5001
 export NODEBIN='pwd'/assets/node_modules/.bin
 export PATH="$PATH:$NODEBIN"
 
